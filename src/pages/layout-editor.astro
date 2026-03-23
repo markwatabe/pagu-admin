@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Layout Editor — Pagu" description="Print layout editor">
+  <div class="h-screen">
+    <div id="editor-root" class="h-full" />
+  </div>
+  <script>
+    import { createElement } from 'react'
+    import { createRoot } from 'react-dom/client'
+    import { PrintLayoutEditor } from '../components/print-layout/PrintLayoutEditor'
+
+    const root = createRoot(document.getElementById('editor-root')!)
+    root.render(
+      createElement(PrintLayoutEditor, {
+        initialState: {
+          dataModel: {
+            restaurant: { name: 'Pagu', subtitle: 'Restaurant Menu' },
+            sections: [
+              { name: 'Starters', items: [{ name: 'Spring Rolls', price: '$12' }] },
+            ],
+          },
+        },
+      })
+    )
+  </script>
+</Layout>
