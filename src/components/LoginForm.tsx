@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/db';
 
 export function LoginForm() {
-  const navigate = useNavigate();
   const [sentEmail, setSentEmail] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -31,7 +29,6 @@ export function LoginForm() {
     setLoading(true);
     try {
       await db.auth.signInWithMagicCode({ email: sentEmail, code });
-      navigate('/');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Invalid code';
       setError(message);
@@ -83,6 +80,7 @@ export function LoginForm() {
           id="code"
           type="text"
           inputMode="numeric"
+          autoComplete="one-time-code"
           required
           value={code}
           onChange={(e) => setCode(e.target.value)}

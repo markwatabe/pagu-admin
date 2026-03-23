@@ -15,7 +15,12 @@ export function ProtectedLayout() {
   if (isLoading || (user && profileLoading)) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;
 
-  if (!profile?.is_admin) {
+  // Profile row not found — sign out and send back to login
+  if (!profile) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!profile.is_admin) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <p className="text-lg font-semibold text-gray-900">Access denied</p>
