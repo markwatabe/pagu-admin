@@ -47,6 +47,7 @@ Five namespaces mirror the existing AstroDB tables. Foreign keys become InstantD
 - `unit: string` — optional
 - Link: `measuredIngredients.menuItem` → `menuItems` (many-to-one)
 - Link: `measuredIngredients.ingredient` → `ingredients` (many-to-one)
+- Note: The existing AstroDB schema has an `outputIngredientId` column that does not appear in any seed data rows. This column is intentionally omitted from the InstantDB schema and migration. If real production data exists in this column, a second link `measuredIngredients.outputIngredient` → `ingredients` would be needed.
 
 ### Links Summary
 
@@ -72,9 +73,16 @@ React component. Logic:
 1. `const { isLoading, user } = db.useAuth()`
 2. `isLoading` → render full-screen spinner
 3. `!user` → `window.location.href = '/login'`
-4. Query `users` namespace for `is_admin` flag tied to current `user.id`
-5. `!is_admin` → render "Access denied" message
-6. `is_admin` → render `children`
+4. Query `users` namespace for the app profile linked to the current auth user:
+   ```ts
+   const { data } = db.useQuery(
+     user ? { users: { $: { where: { '$users.id': user.id } } } } : null
+   );
+   const profile = data?.users?.[0];
+   ```
+5. Profile still loading → render spinner
+6. `!profile?.is_admin` → render "Access denied" message
+7. `profile.is_admin` → render `children`
 
 **`src/pages/login.astro`**
 Public Astro page (no AuthGate). Renders a `<LoginForm client:load>` React component.
@@ -84,13 +92,16 @@ Two-step UI:
 - Step 1: Email input → `db.auth.sendMagicCode({ email })` → advance to step 2
 - Step 2: Code input → `db.auth.signInWithMagicCode({ email, code })` → on success, `window.location.href = '/'`
 
+No additional profile-linking step is needed at login. The `$users.users` link is queried in `AuthGate` by matching `$users.id` to the auth user's id.
+
 ### Auth Persistence
 
 InstantDB stores the refresh token client-side (browser storage). The SDK reconnects the WebSocket with this token on every page load. `db.useAuth()` in any React component picks up the live session — no cookies or server sessions needed.
 
 ### All Other Pages
 
-Each existing Astro page:
+Each existing Astro page imports `AuthGate` as the single client island. Page content React components are imported and rendered as **plain React children inside `AuthGate`** — they do not get their own `client:load` directive:
+
 ```astro
 ---
 import Layout from '../layouts/Layout.astro';
@@ -99,10 +110,48 @@ import UsersPage from '../components/admin/UsersPage';
 ---
 <Layout title="Users — Pagu">
   <AuthGate client:load>
-    <UsersPage client:load />
+    <UsersPage />
   </AuthGate>
 </Layout>
 ```
+
+`AuthGate` is the single Astro island boundary. All components rendered inside it are regular React and do not need their own hydration directive.
+
+### `menu-render-print.astro` Special Case
+
+This page is a self-contained `<!doctype html>` document (no `Layout.astro`) with its own print CSS. To preserve this, `AuthGate` is rendered directly in the `<body>` without a Layout wrapper:
+
+```astro
+---
+import AuthGate from '../components/AuthGate';
+import MenuRenderPrintPage from '../components/admin/MenuRenderPrintPage';
+---
+<!doctype html>
+<html>
+  <head><!-- existing print CSS --></head>
+  <body>
+    <AuthGate client:load>
+      <MenuRenderPrintPage />
+    </AuthGate>
+  </body>
+</html>
+```
+
+### `index.astro` — Home Page
+
+The current home page is a generic starter template with no admin data. After migration it should redirect to the dashboard or be replaced with a simple authenticated landing page. It is gated with `AuthGate` like all other pages.
+
+### `is_admin` Bootstrap
+
+After first sign-in, the auth user exists in `$users` but has no linked `users` profile (the `users` namespace records were created by the migration script without the `$users` link). Every login will hit "Access denied" until the link is established.
+
+**Bootstrap procedure after first sign-in:**
+1. Sign in via the magic code flow — this creates a `$users` record.
+2. Run the bootstrap script: `npx tsx scripts/bootstrap-admin.ts <your-email>`
+   - This script queries `$users` by email, finds the matching `users` profile, creates the `$users.users` link, and sets `is_admin: true`.
+3. Refresh the page — AuthGate will now resolve `is_admin: true` and grant access.
+
+Other team members follow the same flow, but an admin sets `is_admin: true` for them via the Users page or the dashboard.
 
 ## 3. Data Layer — Page Conversions
 
@@ -110,6 +159,7 @@ All Astro frontmatter DB queries are removed. Each page gets a corresponding Rea
 
 | Astro Page | New React Component | InstantDB Query |
 |---|---|---|
+| `index.astro` | `HomePage.tsx` (or redirect) | none / `{}` |
 | `users.astro` | `UsersPage.tsx` | `{ users: {} }` |
 | `reviews.astro` | `ReviewsPage.tsx` | `{ reviews: {} }` |
 | `menu-builder.astro` | `MenuBuilderPage.tsx` | `{ menuItems: {} }` |
@@ -128,50 +178,61 @@ if (error) return <ErrorMessage error={error} />;
 const { users } = data;
 ```
 
+**Note on `menu-render-print` section names:** The existing print page logic uses hardcoded section names (`'Starters'`, `'Mains'`, `'Desserts'`) that do not match the actual data (`'Chilled'`, `'Tapas'`, `'Baos'`, `'Land & Sea'`, `'Noodles & Rice'`, `'Sweet'`). The `MenuRenderPrintPage` component must use the actual section names from the data.
+
 ## 4. Data Migration
 
 ### Strategy
 
 One-time Node.js script using `@instantdb/admin`. Reads seed data directly from the existing `db/seed.ts` values (the source of truth). Transacts into InstantDB via the Admin SDK using `INSTANT_ADMIN_TOKEN`.
 
-### Script Location
+### Scripts
 
-`scripts/migrate-to-instantdb.ts`
-
+**`scripts/migrate-to-instantdb.ts`** — main migration
 Run with: `npx tsx scripts/migrate-to-instantdb.ts`
+
+**`scripts/bootstrap-admin.ts`** — post-first-login bootstrap
+Run with: `npx tsx scripts/bootstrap-admin.ts <email>`
 
 ### Migration Order
 
 1. `ingredients` — no dependencies
 2. `menuItems` — no dependencies
 3. `reviews` — no dependencies
-4. `users` (app profiles) — no dependencies
+4. `users` (app profiles, without `$users` link) — no dependencies
 5. `measuredIngredients` + links to `menuItems` and `ingredients`
 
 Each step uses `db.transact()` with `db.tx.<namespace>[id].update({ ...fields })` for records and `db.tx.<namespace>[id].link({ <linkName>: targetId })` for relationships.
 
 ### Auth Users vs App Users
 
-The `users` namespace holds profile data (name, role, is_admin). InstantDB `$users` (auth identities) are created separately when each person first signs in with a magic code. The link between `$users` and `users` is established at first login — not during migration.
+The `users` namespace holds profile data (name, role, is_admin). InstantDB `$users` (auth identities) are created when someone first signs in with a magic code. The `$users.users` link is established by the bootstrap script after first login.
 
-After running the migration and signing in for the first time, manually set `is_admin: true` on your own `users` record via the InstantDB dashboard or a one-off admin script.
+## 5. Environment Variables
 
-## 5. Packages to Add / Remove
+Add to `.env` (already present) and document in `.env.example`:
+
+```
+VITE_INSTANT_APP_ID=your-app-id     # exposed to browser via Vite
+INSTANT_ADMIN_TOKEN=your-admin-token # server/scripts only, never exposed to browser
+```
+
+## 6. Packages to Add / Remove
 
 **Add:**
 - `@instantdb/react` — client SDK with `useQuery`, `useAuth`, `db.auth.*`
-- `@instantdb/admin` — server/script SDK for migration
+- `@instantdb/admin` — server/script SDK for migration and bootstrap
 
-**Remove:**
-- `@astrojs/db` — AstroDB integration
-- `drizzle-kit` — no longer needed
+**Remove (in this order):**
+1. Uninstall `@astrojs/db` and `drizzle-kit`
+2. Remove `db()` from `astro.config.mjs`
+3. Delete source files (see Section 7)
 
-**Update:**
-- `astro.config.mjs` — remove `db()` integration
-
-## 6. Files to Delete After Migration
+## 7. Files to Delete After Migration
 
 - `db/config.ts`
 - `db/seed.ts`
 - `drizzle.config.ts` (if present)
 - `src/queries/menuItemsWithIngredients.ts`
+- `scripts/migrate-to-instantdb.ts` (after migration is confirmed complete)
+- `scripts/bootstrap-admin.ts` (after all admins are bootstrapped)
