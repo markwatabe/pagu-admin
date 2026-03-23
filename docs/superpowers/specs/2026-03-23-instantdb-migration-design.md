@@ -6,7 +6,9 @@
 
 ## Overview
 
-Migrate the Pagu admin panel from AstroDB/Drizzle to InstantDB. Replace server-side data fetching with client-side React components using InstantDB `useQuery` hooks. Add magic-code email auth with an `is_admin` gate on all pages.
+Replace the Astro framework with a Vite SPA. Migrate from AstroDB/Drizzle to InstantDB. Use React Router for client-side routing, InstantDB `useQuery` hooks for all data fetching, and InstantDB magic-code auth with an `is_admin` gate on all routes.
+
+Astro's server rendering was appropriate when the goal included public-facing pages. Now that the entire app is an authenticated admin panel with client-side data, a plain Vite + React SPA is the right fit — no island architecture, no hydration directives, no special cases.
 
 ## 1. InstantDB Schema
 
@@ -57,22 +59,82 @@ Five namespaces mirror the existing AstroDB tables. Foreign keys become InstantD
 | `measuredIngredients.menuItem` | `measuredIngredients` | `menuItems` | many-to-one |
 | `measuredIngredients.ingredient` | `measuredIngredients` | `ingredients` | many-to-one |
 
-## 2. Auth Architecture
+## 2. Application Architecture
 
-### Approach
+### Tech Stack
 
-Option A — Auth wrapper component. Every page renders a `<AuthGate client:load>` React island. The gate checks auth state and either renders page content or redirects to `/login`. No Astro middleware or SSR mode required.
+| Concern | Tool |
+|---|---|
+| Build | Vite |
+| Framework | React 19 |
+| Routing | React Router v7 |
+| Styling | Tailwind CSS v4 (via `@tailwindcss/vite`) |
+| Database + Auth | InstantDB (`@instantdb/react`) |
 
-### Key Files
+### File Structure
 
-**`src/lib/db.ts`**
-Single InstantDB client instance. Reads `VITE_INSTANT_APP_ID` from env. Exported as `db` and used everywhere.
+```
+index.html
+vite.config.ts
+src/
+  main.tsx              — ReactDOM.createRoot, mounts <App />
+  App.tsx               — BrowserRouter + route definitions
+  styles/
+    global.css          — Tailwind directives (existing, kept as-is)
+  lib/
+    db.ts               — single InstantDB client instance
+  components/
+    ProtectedLayout.tsx — auth gate as a React Router layout route
+    LoginForm.tsx       — magic code two-step form
+    Spinner.tsx         — shared loading indicator
+  pages/
+    LoginPage.tsx
+    UsersPage.tsx
+    ReviewsPage.tsx
+    MenuBuilderPage.tsx
+    MenuIngredientsPage.tsx
+    MenuRenderPage.tsx
+    MenuRenderPrintPage.tsx
+    MenuPreviewPage.tsx
+scripts/
+  migrate-to-instantdb.ts
+  bootstrap-admin.ts
+```
 
-**`src/components/AuthGate.tsx`**
-React component. Logic:
+### Route Definitions (`App.tsx`)
+
+```tsx
+<BrowserRouter>
+  <Routes>
+    <Route path="/login" element={<LoginPage />} />
+    <Route element={<ProtectedLayout />}>
+      <Route index element={<Navigate to="/users" replace />} />
+      <Route path="/users" element={<UsersPage />} />
+      <Route path="/reviews" element={<ReviewsPage />} />
+      <Route path="/menu-builder" element={<MenuBuilderPage />} />
+      <Route path="/menu-ingredients" element={<MenuIngredientsPage />} />
+      <Route path="/menu-render" element={<MenuRenderPage />} />
+      <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />
+      <Route path="/menu-preview" element={<MenuPreviewPage />} />
+    </Route>
+  </Routes>
+</BrowserRouter>
+```
+
+## 3. Auth Architecture
+
+### `src/lib/db.ts`
+
+Single InstantDB client instance. Reads `VITE_INSTANT_APP_ID` from `import.meta.env`. Exported as `db` and imported everywhere.
+
+### `src/components/ProtectedLayout.tsx`
+
+React Router layout route. Rendered once for all protected routes. Uses `<Outlet />` to render the matched child route.
+
+Logic:
 1. `const { isLoading, user } = db.useAuth()`
-2. `isLoading` → render full-screen spinner
-3. `!user` → `window.location.href = '/login'`
+2. `isLoading` → render full-screen `<Spinner />`
+3. `!user` → `<Navigate to="/login" replace />`
 4. Query `users` namespace for the app profile linked to the current auth user:
    ```ts
    const { data } = db.useQuery(
@@ -80,107 +142,64 @@ React component. Logic:
    );
    const profile = data?.users?.[0];
    ```
-5. Profile still loading → render spinner
-6. `!profile?.is_admin` → render "Access denied" message
-7. `profile.is_admin` → render `children`
+5. Profile still loading → render `<Spinner />`
+6. `!profile?.is_admin` → render "Access denied" message with sign-out button
+7. `profile.is_admin` → render `<Outlet />`
 
-**`src/pages/login.astro`**
-Public Astro page (no AuthGate). Renders a `<LoginForm client:load>` React component.
+### `src/pages/LoginPage.tsx`
 
-**`src/components/LoginForm.tsx`**
+Public route — no `ProtectedLayout`. Renders `<LoginForm />`.
+
+### `src/components/LoginForm.tsx`
+
 Two-step UI:
 - Step 1: Email input → `db.auth.sendMagicCode({ email })` → advance to step 2
-- Step 2: Code input → `db.auth.signInWithMagicCode({ email, code })` → on success, `window.location.href = '/'`
-
-No additional profile-linking step is needed at login. The `$users.users` link is queried in `AuthGate` by matching `$users.id` to the auth user's id.
+- Step 2: Code input → `db.auth.signInWithMagicCode({ email, code })` → on success, React Router `navigate('/')` (which redirects to `/users`)
 
 ### Auth Persistence
 
-InstantDB stores the refresh token client-side (browser storage). The SDK reconnects the WebSocket with this token on every page load. `db.useAuth()` in any React component picks up the live session — no cookies or server sessions needed.
-
-### All Other Pages
-
-Each existing Astro page imports `AuthGate` as the single client island. Page content React components are imported and rendered as **plain React children inside `AuthGate`** — they do not get their own `client:load` directive:
-
-```astro
----
-import Layout from '../layouts/Layout.astro';
-import AuthGate from '../components/AuthGate';
-import UsersPage from '../components/admin/UsersPage';
----
-<Layout title="Users — Pagu">
-  <AuthGate client:load>
-    <UsersPage />
-  </AuthGate>
-</Layout>
-```
-
-`AuthGate` is the single Astro island boundary. All components rendered inside it are regular React and do not need their own hydration directive.
-
-### `menu-render-print.astro` Special Case
-
-This page is a self-contained `<!doctype html>` document (no `Layout.astro`) with its own print CSS. To preserve this, `AuthGate` is rendered directly in the `<body>` without a Layout wrapper:
-
-```astro
----
-import AuthGate from '../components/AuthGate';
-import MenuRenderPrintPage from '../components/admin/MenuRenderPrintPage';
----
-<!doctype html>
-<html>
-  <head><!-- existing print CSS --></head>
-  <body>
-    <AuthGate client:load>
-      <MenuRenderPrintPage />
-    </AuthGate>
-  </body>
-</html>
-```
-
-### `index.astro` — Home Page
-
-The current home page is a generic starter template with no admin data. After migration it should redirect to the dashboard or be replaced with a simple authenticated landing page. It is gated with `AuthGate` like all other pages.
+InstantDB stores the refresh token in browser storage. The SDK reconnects the WebSocket with this token on every page load. `db.useAuth()` in any React component picks up the live session — no cookies or server sessions needed.
 
 ### `is_admin` Bootstrap
 
-After first sign-in, the auth user exists in `$users` but has no linked `users` profile (the `users` namespace records were created by the migration script without the `$users` link). Every login will hit "Access denied" until the link is established.
+After first sign-in, the auth user exists in `$users` but has no linked `users` profile (profiles were created by the migration script without the `$users` link). Every login will hit "Access denied" until the link is established.
 
 **Bootstrap procedure after first sign-in:**
 1. Sign in via the magic code flow — this creates a `$users` record.
-2. Run the bootstrap script: `npx tsx scripts/bootstrap-admin.ts <your-email>`
-   - This script queries `$users` by email, finds the matching `users` profile, creates the `$users.users` link, and sets `is_admin: true`.
-3. Refresh the page — AuthGate will now resolve `is_admin: true` and grant access.
+2. Run: `npx tsx scripts/bootstrap-admin.ts <your-email>`
+   - Queries `$users` by email, finds the matching `users` profile, creates the `$users.users` link, sets `is_admin: true`.
+3. Refresh — `ProtectedLayout` resolves `is_admin: true` and grants access.
 
-Other team members follow the same flow, but an admin sets `is_admin: true` for them via the Users page or the dashboard.
+Other team members follow the same flow; an admin sets `is_admin: true` for them via the Users page.
 
-## 3. Data Layer — Page Conversions
+## 4. Data Layer
 
-All Astro frontmatter DB queries are removed. Each page gets a corresponding React component that uses `db.useQuery`.
+All data fetching moves to React components using `db.useQuery`. Each page follows the same pattern:
 
-| Astro Page | New React Component | InstantDB Query |
-|---|---|---|
-| `index.astro` | `HomePage.tsx` (or redirect) | none / `{}` |
-| `users.astro` | `UsersPage.tsx` | `{ users: {} }` |
-| `reviews.astro` | `ReviewsPage.tsx` | `{ reviews: {} }` |
-| `menu-builder.astro` | `MenuBuilderPage.tsx` | `{ menuItems: {} }` |
-| `menu-ingredients.astro` | `MenuIngredientsPage.tsx` | `{ menuItems: { measuredIngredients: { ingredient: {} } } }` |
-| `menu-render.astro` | `MenuRenderPage.tsx` | `{ menuItems: {} }` |
-| `menu-render-print.astro` | `MenuRenderPrintPage.tsx` | `{ menuItems: {} }` |
-| `menu-preview.astro` | `MenuPreviewPage.tsx` | `{ menuItems: {} }` |
-
-The nested query for `menu-ingredients` replaces `src/queries/menuItemsWithIngredients.ts` — InstantDB returns joins inline.
-
-Each React component follows the same loading pattern:
 ```tsx
 const { isLoading, error, data } = db.useQuery({ users: {} });
 if (isLoading) return <Spinner />;
-if (error) return <ErrorMessage error={error} />;
+if (error) return <div>Error: {error.message}</div>;
 const { users } = data;
 ```
 
-**Note on `menu-render-print` section names:** The existing print page logic uses hardcoded section names (`'Starters'`, `'Mains'`, `'Desserts'`) that do not match the actual data (`'Chilled'`, `'Tapas'`, `'Baos'`, `'Land & Sea'`, `'Noodles & Rice'`, `'Sweet'`). The `MenuRenderPrintPage` component must use the actual section names from the data.
+### Query Reference
 
-## 4. Data Migration
+| Page | InstantDB Query |
+|---|---|
+| `UsersPage` | `{ users: {} }` |
+| `ReviewsPage` | `{ reviews: {} }` |
+| `MenuBuilderPage` | `{ menuItems: {} }` |
+| `MenuIngredientsPage` | `{ menuItems: { measuredIngredients: { ingredient: {} } } }` |
+| `MenuRenderPage` | `{ menuItems: {} }` |
+| `MenuRenderPrintPage` | `{ menuItems: {} }` |
+| `MenuPreviewPage` | `{ menuItems: {} }` |
+
+The nested query for `MenuIngredientsPage` replaces `src/queries/menuItemsWithIngredients.ts` — InstantDB returns joins inline.
+
+**Note on `MenuRenderPrintPage` section names:** The existing Astro print page uses hardcoded section names (`'Starters'`, `'Mains'`, `'Desserts'`) that do not match the actual data (`'Chilled'`, `'Tapas'`, `'Baos'`, `'Land & Sea'`, `'Noodles & Rice'`, `'Sweet'`). The new component must derive section groups from the actual data rather than hardcoding them.
+
+## 5. Data Migration
 
 ### Strategy
 
@@ -208,31 +227,111 @@ Each step uses `db.transact()` with `db.tx.<namespace>[id].update({ ...fields })
 
 The `users` namespace holds profile data (name, role, is_admin). InstantDB `$users` (auth identities) are created when someone first signs in with a magic code. The `$users.users` link is established by the bootstrap script after first login.
 
-## 5. Environment Variables
+## 6. Environment Variables
 
 Add to `.env` (already present) and document in `.env.example`:
 
 ```
-VITE_INSTANT_APP_ID=your-app-id     # exposed to browser via Vite
-INSTANT_ADMIN_TOKEN=your-admin-token # server/scripts only, never exposed to browser
+VITE_INSTANT_APP_ID=your-app-id      # exposed to browser via Vite
+INSTANT_ADMIN_TOKEN=your-admin-token  # scripts only, never sent to browser
 ```
 
-## 6. Packages to Add / Remove
+## 7. Packages
 
 **Add:**
-- `@instantdb/react` — client SDK with `useQuery`, `useAuth`, `db.auth.*`
+- `vite` — build tool
+- `@vitejs/plugin-react` — React JSX transform for Vite
+- `react-router-dom` — client-side routing (React Router v7; includes `react-router`)
+- `@instantdb/react` — client SDK (`useQuery`, `useAuth`, `db.auth.*`)
 - `@instantdb/admin` — server/script SDK for migration and bootstrap
 
-**Remove (in this order):**
-1. Uninstall `@astrojs/db` and `drizzle-kit`
-2. Remove `db()` from `astro.config.mjs`
-3. Delete source files (see Section 7)
+**Remove:**
+- `astro`
+- `@astrojs/react`
+- `@astrojs/db`
+- `drizzle-kit`
 
-## 7. Files to Delete After Migration
+**Keep:**
+- `react`, `react-dom`
+- `tailwindcss`, `@tailwindcss/vite`
+- `@types/react`, `@types/react-dom`
+- `liquidjs`, `@dnd-kit/core`, `@dnd-kit/utilities` — keep if still used by menu pages; remove if not
 
+**Update `package.json` scripts:**
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}
+```
+
+## 8a. New Config Files
+
+**`index.html`** (root, Vite entry point):
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagu Admin</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+**`vite.config.ts`**:
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
+```
+
+**`tsconfig.json`** — replace the Astro base with a plain strict config:
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  },
+  "include": ["src", "scripts"],
+  "exclude": ["dist", "node_modules"]
+}
+```
+
+## 9. Files to Delete
+
+**Astro source (delete entirely):**
+- `src/pages/` — all `.astro` page files
+- `src/layouts/Layout.astro`
+- `src/components/FeatureCard.astro`
+- `src/components/admin/TodoPage.tsx` — starter placeholder, not part of the admin panel
+- `astro.config.mjs`
+
+**AstroDB / Drizzle:**
 - `db/config.ts`
 - `db/seed.ts`
 - `drizzle.config.ts` (if present)
 - `src/queries/menuItemsWithIngredients.ts`
-- `scripts/migrate-to-instantdb.ts` (after migration is confirmed complete)
-- `scripts/bootstrap-admin.ts` (after all admins are bootstrapped)
+
+**Migration scripts (after use):**
+- `scripts/migrate-to-instantdb.ts` — delete after migration is confirmed complete
+- `scripts/bootstrap-admin.ts` — delete after all admins are bootstrapped
