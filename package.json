@@ -17,9 +17,6 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@instantdb/admin": "^0.22.169",
     "@instantdb/react": "^0.22.169",
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
     "liquidjs": "^10.25.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -28,10 +25,12 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/uuid": "^10.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "dotenv": "^17.3.1",
     "jsdom": "^29.0.1",
