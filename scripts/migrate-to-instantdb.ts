@@ -19,8 +19,8 @@ const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN });
 // re-running the script is safe — the same input always produces the same UUID.
 const SEED_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // UUID v5 namespace (URL)
 
-function seedId(namespace: string, numericId: number): string {
-  return uuidv5(`${namespace}:${numericId}`, SEED_NAMESPACE);
+function seedId(prefix: string, numericId: number): string {
+  return uuidv5(`${prefix}:${numericId}`, SEED_NAMESPACE);
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
