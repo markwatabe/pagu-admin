@@ -70,6 +70,7 @@ export function PrintLayoutEditor({ initialState, onChange }: PrintLayoutEditorP
         <div className="flex w-72 shrink-0 flex-col border-l border-gray-200 bg-white overflow-y-auto">
           <ClassEditor
             node={selectedNode}
+            dataModel={dataModel}
             onUpdate={patch => selectedNode && updateNode(selectedNode.id, patch)}
             onRemove={() => selectedNode && removeNode(selectedNode.id)}
           />

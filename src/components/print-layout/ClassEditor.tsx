@@ -9,8 +9,61 @@ import type { LayoutNode } from './types'
 
 interface ClassEditorProps {
   node: LayoutNode | null
+  dataModel: Record<string, unknown>
   onUpdate: (patch: Partial<LayoutNode>) => void
   onRemove: () => void
+}
+
+/** Derive available Liquid variable names from a value, for display in the schema hint. */
+function schemaKeys(obj: unknown, prefix: string): string[] {
+  if (obj === null || obj === undefined || typeof obj !== 'object' || Array.isArray(obj)) return []
+  return Object.keys(obj as Record<string, unknown>).map(k => `${prefix}.${k}`)
+}
+
+function SchemaHint({ queryKey, dataModel }: { queryKey: string | null; dataModel: Record<string, unknown> }) {
+  if (queryKey) {
+    // Query-bound: show item fields from first element of the array
+    const arr = dataModel[queryKey]
+    const sample = Array.isArray(arr) && arr.length > 0 ? arr[0] : null
+    const fields = sample ? schemaKeys(sample, 'item') : []
+    return (
+      <div className="space-y-1">
+        <p className="text-xs text-gray-400 italic">Renders once per item.</p>
+        {fields.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {fields.map(f => (
+              <code key={f} className="bg-gray-100 text-gray-500 px-1 py-0.5 rounded text-[10px] font-mono">
+                {'{{ '}{f}{' }}'}
+              </code>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Static node: show top-level non-array keys and nested object keys
+  const topKeys = Object.entries(dataModel)
+    .filter(([, v]) => !Array.isArray(v))
+    .flatMap(([k, v]) => {
+      if (v && typeof v === 'object' && !Array.isArray(v)) return schemaKeys(v, k)
+      return [`${k}`]
+    })
+
+  if (topKeys.length === 0) return null
+
+  return (
+    <div className="space-y-1">
+      <p className="text-xs text-gray-400 italic">Available variables:</p>
+      <div className="flex flex-wrap gap-1">
+        {topKeys.map(f => (
+          <code key={f} className="bg-gray-100 text-gray-500 px-1 py-0.5 rounded text-[10px] font-mono">
+            {'{{ '}{f}{' }}'}
+          </code>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 const ALIGN_ICONS: Record<string, string> = {
@@ -69,7 +122,7 @@ function ButtonPicker({ tokens, classes, onChange, renderLabel }: {
   )
 }
 
-export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
+export function ClassEditor({ node, dataModel, onUpdate, onRemove }: ClassEditorProps) {
   if (!node) {
     return (
       <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-gray-400">
@@ -114,10 +167,10 @@ export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
             {NAMED_QUERIES.map(q => <option key={q.key} value={q.key}>{q.label}</option>)}
           </select>
         </div>
-        {node.query && (
-          <p className="text-xs text-gray-400 italic">
-            Template renders once per item. Use <code className="bg-gray-100 px-0.5 rounded">{'{{ item.name }}'}</code> etc.
-          </p>
+        {node.query ? (
+          <SchemaHint queryKey={node.query} dataModel={dataModel} />
+        ) : (
+          <SchemaHint queryKey={null} dataModel={dataModel} />
         )}
       </section>
 
