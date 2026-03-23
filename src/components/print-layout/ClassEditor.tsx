@@ -1,5 +1,7 @@
 import {
   FONT_SIZE_TOKENS, FONT_WEIGHT_TOKENS, TEXT_ALIGN_TOKENS, TEXT_COLOR_TOKENS,
+  TEXT_TRANSFORM_TOKENS, LETTER_SPACING_TOKENS, LINE_HEIGHT_TOKENS,
+  BG_COLOR_TOKENS, PADDING_TOKENS, BORDER_BOTTOM_TOKENS, BORDER_COLOR_TOKENS,
   getActiveToken, applyToken,
 } from './classTokens'
 import type { LayoutNode } from './types'
@@ -14,6 +16,56 @@ const ALIGN_ICONS: Record<string, string> = {
   'text-left': '⟵',
   'text-center': '≡',
   'text-right': '⟶',
+}
+
+function SelectPicker({ id, label, tokens, classes, onChange }: {
+  id: string
+  label: string
+  tokens: readonly string[]
+  classes: string
+  onChange: (category: readonly string[], token: string) => void
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor={id} className="w-14 shrink-0 text-xs text-gray-500">{label}</label>
+      <select
+        id={id}
+        aria-label={label}
+        className="flex-1 rounded border border-gray-200 px-1 py-0.5 text-xs"
+        value={getActiveToken(classes, tokens) ?? ''}
+        onChange={e => onChange(tokens, e.target.value)}
+      >
+        <option value="">—</option>
+        {tokens.map(t => <option key={t} value={t}>{t}</option>)}
+      </select>
+    </div>
+  )
+}
+
+function ButtonPicker({ tokens, classes, onChange, renderLabel }: {
+  tokens: readonly string[]
+  classes: string
+  onChange: (category: readonly string[], token: string) => void
+  renderLabel: (token: string) => string
+}) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tokens.map(t => (
+        <button
+          key={t}
+          onClick={() => onChange(tokens, t)}
+          className={`rounded px-1.5 py-0.5 text-xs border ${
+            getActiveToken(classes, tokens) === t
+              ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+              : 'border-gray-200 text-gray-500 hover:border-gray-400'
+          }`}
+          aria-label={t}
+        >
+          {renderLabel(t)}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
@@ -45,77 +97,44 @@ export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
         </button>
       </div>
 
-      {/* Typography pickers */}
+      {/* Typography */}
       <section className="border-b border-gray-100 px-3 py-3 space-y-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Typography</p>
-
-        <div className="flex items-center gap-2">
-          <label htmlFor="font-size" className="w-14 shrink-0 text-xs text-gray-500">Font size</label>
-          <select
-            id="font-size"
-            aria-label="Font size"
-            className="flex-1 rounded border border-gray-200 px-1 py-0.5 text-xs"
-            value={getActiveToken(node.classes, FONT_SIZE_TOKENS) ?? ''}
-            onChange={e => updateClasses(FONT_SIZE_TOKENS, e.target.value)}
-          >
-            <option value="">—</option>
-            {FONT_SIZE_TOKENS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label htmlFor="font-weight" className="w-14 shrink-0 text-xs text-gray-500">Weight</label>
-          <select
-            id="font-weight"
-            aria-label="Font weight"
-            className="flex-1 rounded border border-gray-200 px-1 py-0.5 text-xs"
-            value={getActiveToken(node.classes, FONT_WEIGHT_TOKENS) ?? ''}
-            onChange={e => updateClasses(FONT_WEIGHT_TOKENS, e.target.value)}
-          >
-            <option value="">—</option>
-            {FONT_WEIGHT_TOKENS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
+        <SelectPicker id="font-size" label="Font size" tokens={FONT_SIZE_TOKENS} classes={node.classes} onChange={updateClasses} />
+        <SelectPicker id="font-weight" label="Weight" tokens={FONT_WEIGHT_TOKENS} classes={node.classes} onChange={updateClasses} />
 
         <div className="flex items-center gap-2">
           <span className="w-14 shrink-0 text-xs text-gray-500">Align</span>
-          <div className="flex gap-1">
-            {TEXT_ALIGN_TOKENS.map(t => (
-              <button
-                key={t}
-                onClick={() => updateClasses(TEXT_ALIGN_TOKENS, t)}
-                className={`rounded px-2 py-0.5 text-xs border ${
-                  getActiveToken(node.classes, TEXT_ALIGN_TOKENS) === t
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-500 hover:border-gray-400'
-                }`}
-                aria-label={t}
-              >
-                {ALIGN_ICONS[t]}
-              </button>
-            ))}
-          </div>
+          <ButtonPicker tokens={TEXT_ALIGN_TOKENS} classes={node.classes} onChange={updateClasses} renderLabel={t => ALIGN_ICONS[t]} />
         </div>
 
         <div className="flex items-center gap-2">
           <span className="w-14 shrink-0 text-xs text-gray-500">Color</span>
-          <div className="flex flex-wrap gap-1">
-            {TEXT_COLOR_TOKENS.map(t => (
-              <button
-                key={t}
-                onClick={() => updateClasses(TEXT_COLOR_TOKENS, t)}
-                className={`rounded px-1.5 py-0.5 text-xs border ${
-                  getActiveToken(node.classes, TEXT_COLOR_TOKENS) === t
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-gray-400'
-                }`}
-                aria-label={t}
-              >
-                {t.replace('text-', '')}
-              </button>
-            ))}
-          </div>
+          <ButtonPicker tokens={TEXT_COLOR_TOKENS} classes={node.classes} onChange={updateClasses} renderLabel={t => t.replace('text-', '')} />
         </div>
+
+        <SelectPicker id="text-transform" label="Case" tokens={TEXT_TRANSFORM_TOKENS} classes={node.classes} onChange={updateClasses} />
+        <SelectPicker id="letter-spacing" label="Spacing" tokens={LETTER_SPACING_TOKENS} classes={node.classes} onChange={updateClasses} />
+        <SelectPicker id="line-height" label="Leading" tokens={LINE_HEIGHT_TOKENS} classes={node.classes} onChange={updateClasses} />
+      </section>
+
+      {/* Background & Spacing */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Background &amp; Spacing</p>
+
+        <div className="flex items-center gap-2">
+          <span className="w-14 shrink-0 text-xs text-gray-500">Bg</span>
+          <ButtonPicker tokens={BG_COLOR_TOKENS} classes={node.classes} onChange={updateClasses} renderLabel={t => t.replace('bg-', '')} />
+        </div>
+
+        <SelectPicker id="padding" label="Padding" tokens={PADDING_TOKENS} classes={node.classes} onChange={updateClasses} />
+      </section>
+
+      {/* Borders */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Borders</p>
+        <SelectPicker id="border-bottom" label="Bottom" tokens={BORDER_BOTTOM_TOKENS} classes={node.classes} onChange={updateClasses} />
+        <SelectPicker id="border-color" label="Color" tokens={BORDER_COLOR_TOKENS} classes={node.classes} onChange={updateClasses} />
       </section>
 
       {/* Position & size */}

@@ -1,10 +1,20 @@
 @import "tailwindcss";
 
 /* Print layout editor: dynamic class tokens that cannot be statically scanned */
+/* Typography */
 @source inline("{text-xs,text-sm,text-base,text-lg,text-xl,text-2xl,text-3xl,text-4xl}");
 @source inline("{font-normal,font-semibold,font-bold}");
 @source inline("{text-left,text-center,text-right}");
 @source inline("{text-black,text-white,text-gray-500,text-gray-700,text-indigo-600,text-red-600}");
+@source inline("{normal-case,uppercase,lowercase,capitalize}");
+@source inline("{tracking-tighter,tracking-tight,tracking-normal,tracking-wide,tracking-wider,tracking-widest}");
+@source inline("{leading-none,leading-tight,leading-snug,leading-normal,leading-relaxed,leading-loose}");
+/* Background & spacing */
+@source inline("{bg-transparent,bg-white,bg-black,bg-gray-50,bg-gray-100,bg-gray-200}");
+@source inline("{p-0,p-1,p-2,p-3,p-4,p-6,p-8}");
+/* Borders */
+@source inline("{border-b-0,border-b,border-b-2}");
+@source inline("{border-transparent,border-gray-200,border-gray-300,border-black}");
 
 @font-face {
   font-family: 'Bryant Pro';
