@@ -1,0 +1,123 @@
+<h2>Editor UI Layout</h2>
+<p class="subtitle">Section 2 of 3 — the full editor mockup</p>
+
+<div class="mockup">
+  <div class="mockup-header">PrintLayoutEditor — full view</div>
+  <div class="mockup-body" style="padding:0;overflow:hidden;">
+
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;font-size:12px;">
+      <span style="font-weight:600;color:#374151;">Print Layout Editor</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+        <span style="color:#64748b;">Scale</span>
+        <div style="width:80px;height:6px;background:#e2e8f0;border-radius:3px;position:relative;">
+          <div style="position:absolute;left:0;top:0;width:55%;height:100%;background:#6366f1;border-radius:3px;"></div>
+          <div style="position:absolute;left:55%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#fff;border:2px solid #6366f1;border-radius:50%;"></div>
+        </div>
+        <span style="color:#374151;font-weight:500;">0.6×</span>
+      </div>
+      <button style="background:#6366f1;color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;">+ Add Node</button>
+    </div>
+
+    <!-- Main content -->
+    <div style="display:flex;height:480px;">
+
+      <!-- Left: Preview Canvas -->
+      <div style="flex:1;background:#e5e7eb;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px;">
+        <!-- Scaled page -->
+        <div style="transform:scale(0.6);transform-origin:top center;width:794px;height:1123px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1px solid #d1d5db;position:relative;flex-shrink:0;">
+
+          <!-- Node 1: selected, blue outline -->
+          <div style="position:absolute;top:40px;left:40px;width:714px;height:80px;border:2px solid #6366f1;border-radius:3px;background:rgba(99,102,241,0.04);cursor:move;">
+            <div style="position:absolute;top:-18px;left:0;font-size:10px;color:#6366f1;font-weight:600;white-space:nowrap;">header · selected</div>
+            <div style="padding:12px 16px;">
+              <div style="font-size:28px;font-weight:700;color:#111;">Pagu</div>
+              <div style="font-size:11px;color:#6b7280;letter-spacing:0.15em;text-transform:uppercase;">Restaurant Menu</div>
+            </div>
+            <!-- drag handle corners -->
+            <div style="position:absolute;top:-4px;left:-4px;width:8px;height:8px;background:#6366f1;border-radius:1px;"></div>
+            <div style="position:absolute;top:-4px;right:-4px;width:8px;height:8px;background:#6366f1;border-radius:1px;"></div>
+            <div style="position:absolute;bottom:-4px;left:-4px;width:8px;height:8px;background:#6366f1;border-radius:1px;"></div>
+            <div style="position:absolute;bottom:-4px;right:-4px;width:8px;height:8px;background:#6366f1;border-radius:1px;"></div>
+          </div>
+
+          <!-- Node 2: unselected -->
+          <div style="position:absolute;top:160px;left:40px;width:340px;height:200px;border:1px dashed #cbd5e1;border-radius:3px;cursor:move;padding:12px 16px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9ca3af;margin-bottom:12px;">STARTERS</div>
+            <div style="font-size:13px;font-weight:600;">Spring Rolls · · · · · $12</div>
+            <div style="font-size:11px;color:#6b7280;">Crispy, served with dipping sauce</div>
+          </div>
+
+          <!-- Node 3: unselected -->
+          <div style="position:absolute;top:160px;left:420px;width:334px;height:200px;border:1px dashed #cbd5e1;border-radius:3px;cursor:move;padding:12px 16px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#9ca3af;margin-bottom:12px;">MAINS</div>
+            <div style="font-size:13px;font-weight:600;">Roast Duck · · · · · · $38</div>
+            <div style="font-size:11px;color:#6b7280;">With plum sauce and greens</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right: Class Editor -->
+      <div style="width:280px;border-left:1px solid #e2e8f0;background:#fff;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div style="padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#6366f1;">Selected: header</div>
+          <button style="float:right;margin-top:-14px;background:none;border:none;color:#ef4444;font-size:11px;cursor:pointer;">✕ Remove</button>
+        </div>
+
+        <!-- Visual pickers -->
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;">
+          <div style="font-weight:600;color:#374151;margin-bottom:8px;">Typography</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+            <span style="color:#64748b;width:50px;">Size</span>
+            <select style="flex:1;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;">
+              <option>text-2xl</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+            <span style="color:#64748b;width:50px;">Weight</span>
+            <select style="flex:1;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;">
+              <option>font-bold</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="color:#64748b;width:50px;">Align</span>
+            <div style="display:flex;gap:4px;">
+              <button style="padding:2px 6px;font-size:10px;border:1px solid #6366f1;background:#eef2ff;border-radius:3px;color:#6366f1;">≡</button>
+              <button style="padding:2px 6px;font-size:10px;border:1px solid #e2e8f0;background:#fff;border-radius:3px;color:#94a3b8;">≡</button>
+              <button style="padding:2px 6px;font-size:10px;border:1px solid #e2e8f0;background:#fff;border-radius:3px;color:#94a3b8;">≡</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Position -->
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;">
+          <div style="font-weight:600;color:#374151;margin-bottom:8px;">Position &amp; Size</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+            <div><span style="color:#64748b;font-size:10px;">X</span><input style="width:100%;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;" value="40px"/></div>
+            <div><span style="color:#64748b;font-size:10px;">Y</span><input style="width:100%;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;" value="40px"/></div>
+            <div><span style="color:#64748b;font-size:10px;">W</span><input style="width:100%;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;" value="714px"/></div>
+            <div><span style="color:#64748b;font-size:10px;">H</span><input style="width:100%;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:2px 4px;" value="80px"/></div>
+          </div>
+        </div>
+
+        <!-- Raw class string -->
+        <div style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;">
+          <div style="font-weight:600;color:#374151;margin-bottom:6px;">CSS Classes</div>
+          <input style="width:100%;font-size:11px;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-family:monospace;" value="text-2xl font-bold text-left pb-6 border-b-2"/>
+        </div>
+
+        <!-- Template editor -->
+        <div style="padding:10px 12px;flex:1;display:flex;flex-direction:column;font-size:12px;">
+          <div style="font-weight:600;color:#374151;margin-bottom:6px;">Liquid Template</div>
+          <textarea style="flex:1;font-size:11px;font-family:monospace;border:1px solid #e2e8f0;border-radius:3px;padding:6px;resize:none;color:#374151;line-height:1.5;" readonly>&lt;h1&gt;{{ restaurant.name }}&lt;/h1&gt;
+&lt;p&gt;{{ restaurant.subtitle }}&lt;/p&gt;</textarea>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:12px;font-size:13px;color:#64748b;">Does the UI feel right? Any changes to panels, pickers, or the template editor area?</p>

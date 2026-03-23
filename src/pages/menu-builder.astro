@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, MenuItem } from 'astro:db';
+
+const items = await db.select().from(MenuItem).orderBy(MenuItem.section, MenuItem.name);
+
+const sections = [...new Set(items.map((i) => i.section))];
+
+function formatPrice(cents: number) {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+---
+
+<Layout title="Menu Builder — Pagu" description="Build and manage your menus">
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Menu Builder</h1>
+        <p class="mt-1 text-gray-500">{items.length} items across {sections.length} sections</p>
+      </div>
+      <button class="rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+        + Add item
+      </button>
+    </div>
+
+    <div class="space-y-10">
+      {sections.map((section) => {
+        const sectionItems = items.filter((i) => i.section === section);
+        return (
+          <div>
+            <h2 class="mb-4 text-lg font-semibold text-gray-700">{section}</h2>
+            <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <table class="w-full text-sm">
+                <thead class="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th class="px-6 py-4">Item</th>
+                    <th class="px-6 py-4">Description</th>
+                    <th class="px-6 py-4">Price</th>
+                    <th class="px-6 py-4">Availability</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                  {sectionItems.map((item) => (
+                    <tr class="hover:bg-gray-50 transition">
+                      <td class="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+                      <td class="px-6 py-4 text-gray-500">{item.description}</td>
+                      <td class="px-6 py-4 font-medium text-gray-900">{formatPrice(item.price)}</td>
+                      <td class="px-6 py-4">
+                        <span class:list={[
+                          'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                          item.available ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400',
+                        ]}>
+                          <span class:list={[
+                            'h-1.5 w-1.5 rounded-full',
+                            item.available ? 'bg-green-500' : 'bg-gray-400',
+                          ]} />
+                          {item.available ? 'Available' : 'Unavailable'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+</Layout>

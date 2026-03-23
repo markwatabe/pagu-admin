@@ -1,0 +1,89 @@
+<h2>Overall editor layout</h2>
+<p class="subtitle">How should the print layout editor panel be arranged?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8fafc;">
+      <div style="display:flex;gap:8px;height:200px;font-size:11px;">
+        <div style="flex:1;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#e2e8f0;padding:4px 8px;font-weight:600;color:#475569;font-size:10px;">PREVIEW</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+            <div style="width:80px;height:110px;background:#fff;border:1px solid #94a3b8;box-shadow:0 2px 6px rgba(0,0,0,0.15);position:relative;">
+              <div style="height:12px;background:#e2e8f0;margin:8px 6px 4px;border-radius:2px;"></div>
+              <div style="height:6px;background:#f1f5f9;margin:0 6px 3px;border-radius:1px;"></div>
+              <div style="height:6px;background:#f1f5f9;margin:0 6px 3px;border-radius:1px;"></div>
+              <div style="position:absolute;top:32px;left:10px;width:30px;height:20px;background:#dbeafe;border:1px dashed #3b82f6;border-radius:2px;font-size:8px;display:flex;align-items:center;justify-content:center;color:#3b82f6;">sel</div>
+            </div>
+          </div>
+          <div style="padding:4px 8px;background:#f8fafc;border-top:1px solid #e2e8f0;color:#64748b;font-size:9px;">Scale: 0.6×</div>
+        </div>
+        <div style="width:140px;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#e2e8f0;padding:4px 8px;font-weight:600;color:#475569;font-size:10px;">CLASS EDITOR</div>
+          <div style="flex:1;padding:8px;">
+            <div style="font-size:9px;color:#64748b;margin-bottom:4px;">Selected: .header</div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:9px;color:#374151;font-family:monospace;">text-2xl font-bold<br/>text-center<br/>mb-4</div>
+            <div style="margin-top:8px;font-size:9px;color:#94a3b8;">+ Add class</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Side by side, preview left</h3>
+      <p>Preview fills most of the width, class editor in a narrower right panel. Scale slider lives below the preview.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8fafc;">
+      <div style="display:flex;gap:8px;height:200px;font-size:11px;">
+        <div style="width:140px;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#e2e8f0;padding:4px 8px;font-weight:600;color:#475569;font-size:10px;">TREE + EDITOR</div>
+          <div style="padding:6px;">
+            <div style="font-size:9px;color:#64748b;margin-bottom:3px;">Node tree</div>
+            <div style="font-size:9px;background:#dbeafe;padding:2px 4px;border-radius:2px;color:#1d4ed8;margin-bottom:2px;">▶ .page-header</div>
+            <div style="font-size:9px;padding:2px 4px;color:#374151;margin-left:8px;margin-bottom:2px;">— h1</div>
+            <div style="font-size:9px;padding:2px 4px;color:#374151;margin-left:8px;margin-bottom:6px;">— p</div>
+            <div style="font-size:9px;color:#64748b;margin-bottom:3px;">Classes</div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:8px;color:#374151;font-family:monospace;">text-2xl font-bold</div>
+          </div>
+        </div>
+        <div style="flex:1;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#e2e8f0;padding:4px 8px;font-weight:600;color:#475569;font-size:10px;">PREVIEW</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+            <div style="width:80px;height:110px;background:#fff;border:1px solid #94a3b8;box-shadow:0 2px 6px rgba(0,0,0,0.15);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Tree left, preview right</h3>
+      <p>Node tree + class editor on the left, preview on the right. Easier to navigate structure but preview gets less space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8fafc;">
+      <div style="display:flex;gap:8px;height:200px;font-size:11px;flex-direction:column;">
+        <div style="flex:1;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;overflow:hidden;">
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="background:#e2e8f0;padding:4px 8px;font-weight:600;color:#475569;font-size:10px;">PREVIEW (full width)</div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+              <div style="width:80px;height:80px;background:#fff;border:1px solid #94a3b8;box-shadow:0 2px 6px rgba(0,0,0,0.15);position:relative;">
+                <div style="position:absolute;top:15px;left:10px;width:30px;height:20px;background:#dbeafe;border:1px dashed #3b82f6;border-radius:2px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="height:70px;background:#fff;border:1px solid #cbd5e1;border-radius:4px;display:flex;align-items:center;padding:0 12px;gap:16px;">
+          <span style="font-size:9px;color:#64748b;">Selected: .header</span>
+          <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:4px 6px;font-size:9px;color:#374151;font-family:monospace;">text-2xl font-bold text-center mb-4</div>
+          <span style="font-size:9px;color:#64748b;">Scale: 0.6×</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Preview top, editor drawer below</h3>
+      <p>Preview fills the top, class editor appears in a bottom panel on selection. More vertical space for the page.</p>
+    </div>
+  </div>
+</div>

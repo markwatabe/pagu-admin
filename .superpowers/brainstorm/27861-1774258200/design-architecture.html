@@ -1,0 +1,47 @@
+<h2>Component Architecture</h2>
+<p class="subtitle">Section 1 of 3 — does this structure look right?</p>
+
+<div class="mockup">
+  <div class="mockup-header">Component Tree</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.9;">
+    <div style="color:#6366f1;font-weight:700;">PrintLayoutEditor</div>
+    <div style="margin-left:20px;color:#0ea5e9;">├── PreviewCanvas</div>
+    <div style="margin-left:40px;color:#64748b;">│   ├── scaled page container (CSS transform)</div>
+    <div style="margin-left:40px;color:#64748b;">│   ├── page bounds outline (A4 / custom)</div>
+    <div style="margin-left:40px;color:#10b981;">│   └── NodeDragHandle (per node)</div>
+    <div style="margin-left:60px;color:#64748b;">│       ├── @dnd-kit drag wrapper</div>
+    <div style="margin-left:60px;color:#64748b;">│       ├── renders Liquid template live</div>
+    <div style="margin-left:60px;color:#64748b;">│       └── click → select node</div>
+    <div style="margin-left:20px;color:#f59e0b;">└── ClassEditor</div>
+    <div style="margin-left:40px;color:#64748b;">    ├── shown only when a node is selected</div>
+    <div style="margin-left:40px;color:#64748b;">    ├── visual pickers (font, size, color, spacing)</div>
+    <div style="margin-left:40px;color:#64748b;">    ├── raw class string input (synced with pickers)</div>
+    <div style="margin-left:40px;color:#64748b;">    └── Liquid template textarea</div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">usePrintLayout Hook — State Shape</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.7;">
+    <div><span style="color:#8b5cf6;">interface</span> <span style="color:#0ea5e9;">LayoutNode</span> {</div>
+    <div style="margin-left:20px;color:#374151;">id: <span style="color:#10b981;">string</span></div>
+    <div style="margin-left:20px;color:#374151;">x: <span style="color:#10b981;">number</span>        <span style="color:#94a3b8;">// px, absolute on page</span></div>
+    <div style="margin-left:20px;color:#374151;">y: <span style="color:#10b981;">number</span>        <span style="color:#94a3b8;">// px</span></div>
+    <div style="margin-left:20px;color:#374151;">width: <span style="color:#10b981;">number</span>     <span style="color:#94a3b8;">// px</span></div>
+    <div style="margin-left:20px;color:#374151;">height: <span style="color:#10b981;">number</span>    <span style="color:#94a3b8;">// px</span></div>
+    <div style="margin-left:20px;color:#374151;">classes: <span style="color:#10b981;">string</span>   <span style="color:#94a3b8;">// Tailwind / CSS class string</span></div>
+    <div style="margin-left:20px;color:#374151;">template: <span style="color:#10b981;">string</span>  <span style="color:#94a3b8;">// Liquid template source</span></div>
+    <div>}</div>
+    <br/>
+    <div><span style="color:#8b5cf6;">interface</span> <span style="color:#0ea5e9;">PrintLayoutState</span> {</div>
+    <div style="margin-left:20px;color:#374151;">nodes: <span style="color:#0ea5e9;">LayoutNode</span>[]</div>
+    <div style="margin-left:20px;color:#374151;">selectedNodeId: <span style="color:#10b981;">string</span> | <span style="color:#10b981;">null</span></div>
+    <div style="margin-left:20px;color:#374151;">scale: <span style="color:#10b981;">number</span>             <span style="color:#94a3b8;">// e.g. 0.6</span></div>
+    <div style="margin-left:20px;color:#374151;">dataModel: <span style="color:#0ea5e9;">Record</span>&lt;<span style="color:#10b981;">string</span>, <span style="color:#10b981;">unknown</span>&gt; <span style="color:#94a3b8;">// exposed to Liquid</span></div>
+    <div style="margin-left:20px;color:#374151;">pageWidth: <span style="color:#10b981;">number</span>      <span style="color:#94a3b8;">// mm (default: 210 = A4)</span></div>
+    <div style="margin-left:20px;color:#374151;">pageHeight: <span style="color:#10b981;">number</span>     <span style="color:#94a3b8;">// mm (default: 297 = A4)</span></div>
+    <div>}</div>
+  </div>
+</div>
+
+<p style="margin-top:16px;font-size:13px;color:#64748b;">Does this structure look right? Any changes to the data shape or component split?</p>

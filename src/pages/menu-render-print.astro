@@ -1,0 +1,282 @@
+---
+import { db, MenuItem } from 'astro:db';
+import { eq } from 'astro:db';
+
+const items = await db
+  .select()
+  .from(MenuItem)
+  .where(eq(MenuItem.available, true))
+  .orderBy(MenuItem.section, MenuItem.name);
+
+// Must mirror the page split in menu-preview.astro
+const pages = [
+  ['Starters', 'Mains'],
+  ['Desserts'],
+].map((sectionNames) =>
+  sectionNames
+    .map((name) => ({ name, items: items.filter((i) => i.section === name) }))
+    .filter((s) => s.items.length > 0)
+);
+
+function formatPrice(cents: number) {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pagu Dinner Menu</title>
+    <style>
+      @font-face {
+        font-family: 'Bryant Pro';
+        src: url('/fonts/BryantPro-RegularAlternate.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Bryant Pro';
+        src: url('/fonts/BryantPro-RegularItalic.otf') format('opentype');
+        font-weight: 400;
+        font-style: italic;
+      }
+      @font-face {
+        font-family: 'Bryant Pro';
+        src: url('/fonts/BryantPro-Bold.otf') format('opentype');
+        font-weight: 700;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Bryant Pro';
+        src: url('/fonts/BryantPro-BoldItalic.otf') format('opentype');
+        font-weight: 700;
+        font-style: italic;
+      }
+
+      @page {
+        size: A4;
+        /* Zero margin removes browser-injected title / date / URL headers */
+        margin: 0;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Bryant Pro', sans-serif;
+        background: white;
+        color: black;
+      }
+
+      /* ── Toolbar (screen only) ─────────────────────── */
+      .no-print {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f3f4f6;
+        padding: 12px 32px;
+        font-size: 13px;
+        color: #4b5563;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .no-print a          { color: #4f46e5; text-decoration: underline; }
+      .no-print .actions   { display: flex; gap: 10px; }
+      .no-print button {
+        background: black;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 7px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .no-print button:hover { background: #1f2937; }
+
+      /* ── Page container ────────────────────────────── */
+
+      @media screen {
+        body { background: #e5e7eb; }
+
+        .print-page {
+          box-sizing: border-box;
+          width: 210mm;
+          max-width: calc(100vw - 32px);
+          padding: 20mm 18mm;
+          margin: 32px auto;
+          background: white;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+          border: 1px solid #d1d5db;
+        }
+      }
+
+      @media print {
+        .no-print { display: none !important; }
+
+        body { background: white; }
+
+        .print-page {
+          box-sizing: border-box;
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 20mm 18mm;
+          break-after: page;
+          overflow: hidden;
+        }
+
+        .print-page:last-child { break-after: auto; }
+      }
+
+      /* ── Page content ──────────────────────────────── */
+      /* These match menu-preview.astro exactly */
+
+      .page-header {
+        text-align: center;
+        border-bottom: 2px solid black;
+        padding-bottom: 24px;
+        margin-bottom: 40px;
+      }
+      .page-header h1 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 1;
+      }
+      .page-header p {
+        margin: 8px 0 0;
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #6b7280;
+      }
+
+      .menu-section + .menu-section {
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .menu-section h2 {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #6b7280;
+        margin: 0 0 20px;
+      }
+      .menu-section ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .menu-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .menu-item-left { flex: 1; }
+      .menu-item-name-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .menu-item-name {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.375;
+        white-space: nowrap;
+      }
+      .leader {
+        flex: 1;
+        border-bottom: 1px dotted #9ca3af;
+        margin-bottom: 3px;
+      }
+      .menu-item-desc {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 2px 0 0;
+        line-height: 1.4;
+      }
+      .menu-item-price {
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .page-footer {
+        margin-top: 48px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 11px;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="no-print">
+      <span>
+        Print preview &mdash;
+        <a href="/menu-render">back to screen version</a>
+        &nbsp;·&nbsp;
+        <a href="/menu-preview">visual preview</a>
+      </span>
+      <div class="actions">
+        <button onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    {pages.map((pageSections, pageIndex) => (
+      <div class="print-page">
+
+        <!-- Same header template on every page -->
+        <div class="page-header">
+          <h1>Pagu</h1>
+          <p>Restaurant Menu</p>
+        </div>
+
+        <!-- Sections for this page -->
+        {pageSections.map((section) => (
+          <div class="menu-section">
+            <h2>{section.name}</h2>
+            <ul>
+              {section.items.map((item) => (
+                <li class="menu-item">
+                  <div class="menu-item-left">
+                    <div class="menu-item-name-row">
+                      <span class="menu-item-name">{item.name}</span>
+                      <span class="leader" />
+                    </div>
+                    <p class="menu-item-desc">{item.description}</p>
+                  </div>
+                  <span class="menu-item-price">{formatPrice(item.price)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        <!-- Footer only on the last page -->
+        {pageIndex === pages.length - 1 && (
+          <div class="page-footer">
+            Prices include applicable taxes. Menu subject to change.
+          </div>
+        )}
+
+      </div>
+    ))}
+  </body>
+</html>

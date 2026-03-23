@@ -1,0 +1,7 @@
+{"type":"server-started","port":64610,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64610","screen_dir":"/Users/markwatabe/Documents/GitHub/pagu-admin/.superpowers/brainstorm/27861-1774258200"}
+{"type":"screen-added","file":"/Users/markwatabe/Documents/GitHub/pagu-admin/.superpowers/brainstorm/27861-1774258200/layout-overview.html"}
+{"source":"user-event","type":"click","text":"PREVIEW\n          \n            \n              \n              \n              \n              sel\n            \n          \n          Scale: 0.6×\n        \n        \n          CLASS EDITOR\n          \n            Selected: .header\n            text-2xl font-boldtext-centermb-4\n            + Add class\n          \n        \n      \n    \n    \n      A — Side by side, preview left\n      Preview fills most of the width, class editor in a narrower right panel. Scale slider lives below the preview.","choice":"a","id":null,"timestamp":1774258303483}
+{"type":"screen-added","file":"/Users/markwatabe/Documents/GitHub/pagu-admin/.superpowers/brainstorm/27861-1774258200/design-architecture.html"}
+{"type":"screen-added","file":"/Users/markwatabe/Documents/GitHub/pagu-admin/.superpowers/brainstorm/27861-1774258200/design-ui.html"}
+{"type":"screen-added","file":"/Users/markwatabe/Documents/GitHub/pagu-admin/.superpowers/brainstorm/27861-1774258200/design-dataflow.html"}
+{"type":"server-stopped","reason":"idle timeout"}

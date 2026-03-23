@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, MenuItem } from 'astro:db';
+import { eq } from 'astro:db';
+
+const items = await db.select().from(MenuItem).where(eq(MenuItem.available, true)).orderBy(MenuItem.section, MenuItem.name);
+const sections = [...new Set(items.map((i) => i.section))];
+
+function formatPrice(cents: number) {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+---
+
+<Layout title="Menu — Pagu" description="Our full menu">
+  <section class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="mb-2 text-4xl font-extrabold tracking-tight text-gray-900">Our Menu</h1>
+    <p class="mb-12 text-gray-500">Fresh ingredients, served with care.</p>
+
+    <div class="space-y-12">
+      {sections.map((section) => (
+        <div>
+          <h2 class="mb-6 text-xl font-bold tracking-tight text-gray-900 border-b border-gray-100 pb-3">
+            {section}
+          </h2>
+          <ul class="space-y-5">
+            {items.filter((i) => i.section === section).map((item) => (
+              <li class="flex items-start justify-between gap-6">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <p class="font-semibold text-gray-900">{item.name}</p>
+                  </div>
+                  <p class="mt-0.5 text-sm text-gray-500">{item.description}</p>
+                </div>
+                <p class="shrink-0 font-semibold text-gray-900">{formatPrice(item.price)}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
