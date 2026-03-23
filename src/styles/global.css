@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Print layout editor: dynamic class tokens that cannot be statically scanned */
+@source inline("{text-xs,text-sm,text-base,text-lg,text-xl,text-2xl,text-3xl,text-4xl}");
+@source inline("{font-normal,font-semibold,font-bold}");
+@source inline("{text-left,text-center,text-right}");
+@source inline("{text-black,text-white,text-gray-500,text-gray-700,text-indigo-600,text-red-600}");
+
 @font-face {
   font-family: 'Bryant Pro';
   src: url('/fonts/BryantPro-RegularAlternate.otf') format('opentype');
