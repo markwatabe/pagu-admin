@@ -12,7 +12,7 @@ export function MenuBuilderPage() {
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
 
   const items = [...(data?.menuItems ?? [])].sort((a, b) =>
-    a.section.localeCompare(b.section) || a.name.localeCompare(b.name)
+    (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? '')
   );
   const sections = [...new Set(items.map((i) => i.section))];
 

@@ -35,7 +35,7 @@ export function ReviewsPage() {
           <span className="text-2xl font-bold text-indigo-600">{avg.toFixed(1)}</span>
           <div>
             <div className="flex text-yellow-400 text-sm">
-              {'★'.repeat(Math.round(avg))}{'☆'.repeat(5 - Math.round(avg))}
+              {(() => { const r = Math.max(0, Math.min(5, Math.round(avg))); return '★'.repeat(r) + '☆'.repeat(5 - r); })()}
             </div>
             <p className="text-xs text-gray-500">avg rating</p>
           </div>
@@ -48,12 +48,12 @@ export function ReviewsPage() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-indigo-600">
-                  {review.author[0]}
+                  {review.author?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{review.author}</p>
                   <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <span>{sourceIcon[review.source] ?? '💬'} {review.source}</span>
+                    <span>{sourceIcon[review.source] ?? '💬'} {review.source ?? 'Unknown'}</span>
                     <span>·</span>
                     <span>
                       {new Date(review.createdAt).toLocaleDateString('en-US', {
@@ -65,7 +65,7 @@ export function ReviewsPage() {
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-yellow-400">
-                  {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                  {(() => { const r = Math.max(0, Math.min(5, Math.round(review.rating ?? 0))); return '★'.repeat(r) + '☆'.repeat(5 - r); })()}
                 </div>
                 {review.replied ? (
                   <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
