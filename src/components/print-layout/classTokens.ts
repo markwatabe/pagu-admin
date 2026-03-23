@@ -26,5 +26,5 @@ export function getActiveToken(classes: string, category: TokenCategory): string
 export function applyToken(classes: string, category: TokenCategory, newToken: string): string {
   const tokens = classes.split(' ').filter(Boolean)
   const filtered = tokens.filter(t => !category.includes(t))
-  return [...filtered, newToken].join(' ')
+  return newToken ? [...filtered, newToken].join(' ') : filtered.join(' ')
 }

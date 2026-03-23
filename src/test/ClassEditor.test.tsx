@@ -33,6 +33,16 @@ describe('ClassEditor', () => {
       )
       expect(onUpdate.mock.calls[0][0].classes).not.toContain('text-sm')
     })
+
+    it('removes the token when blank option is selected, no trailing space', () => {
+      const onUpdate = vi.fn()
+      render(<ClassEditor node={baseNode} onUpdate={onUpdate} onRemove={vi.fn()} />)
+      fireEvent.change(screen.getByLabelText(/font size/i), { target: { value: '' } })
+      expect(onUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ classes: expect.not.stringContaining('text-sm') })
+      )
+      expect(onUpdate.mock.calls[0][0].classes).not.toMatch(/\s$/)
+    })
   })
 
   describe('raw class string', () => {
@@ -64,6 +74,15 @@ describe('ClassEditor', () => {
       render(<ClassEditor node={baseNode} onUpdate={onUpdate} onRemove={vi.fn()} />)
       fireEvent.change(screen.getByLabelText(/^x$/i), { target: { value: '50' } })
       expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ x: 50 }))
+    })
+
+    it('maps w label to width key and h label to height key', () => {
+      const onUpdate = vi.fn()
+      render(<ClassEditor node={baseNode} onUpdate={onUpdate} onRemove={vi.fn()} />)
+      fireEvent.change(screen.getByLabelText(/^w$/i), { target: { value: '300' } })
+      expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ width: 300 }))
+      fireEvent.change(screen.getByLabelText(/^h$/i), { target: { value: '120' } })
+      expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ height: 120 }))
     })
   })
 

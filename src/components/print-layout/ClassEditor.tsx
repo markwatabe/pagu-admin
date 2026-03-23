@@ -122,7 +122,7 @@ export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
       <section className="border-b border-gray-100 px-3 py-3 space-y-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Position &amp; Size</p>
         <div className="grid grid-cols-2 gap-2">
-          {([ ['x', node.x], ['y', node.y], ['w', node.width], ['h', node.height] ] as [string, number][]).map(([label, value]) => (
+          {([ ['x', 'x', node.x], ['y', 'y', node.y], ['w', 'width', node.width], ['h', 'height', node.height] ] as [string, keyof typeof node, number][]).map(([label, key, value]) => (
             <label key={label} className="flex flex-col gap-0.5">
               <span className="text-xs text-gray-400 uppercase">{label}</span>
               <input
@@ -130,11 +130,7 @@ export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
                 type="number"
                 className="rounded border border-gray-200 px-1.5 py-0.5 text-xs"
                 value={value}
-                onChange={e => {
-                  const num = Number(e.target.value)
-                  const key = label === 'w' ? 'width' : label === 'h' ? 'height' : label as 'x' | 'y'
-                  onUpdate({ [key]: num })
-                }}
+                onChange={e => onUpdate({ [key]: Number(e.target.value) })}
               />
             </label>
           ))}
