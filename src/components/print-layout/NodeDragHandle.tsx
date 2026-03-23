@@ -34,7 +34,8 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
         if (!cancelled) setRenderError(String(err?.message ?? err))
       })
     return () => { cancelled = true }
-  }, [node.template, dataModel, liquid])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.template, dataModel])
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -52,7 +53,7 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
   }
 
   const borderClass = isSelected
-    ? 'border-2 border-indigo-500 cursor-move'
+    ? `border-2 border-indigo-500 ${isDragging ? 'cursor-grabbing' : 'cursor-move'}`
     : 'border border-dashed border-slate-300 cursor-pointer'
 
   const dragOverlay = isDragging ? 'opacity-70' : ''
@@ -72,7 +73,7 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
           {['top-[-4px] left-[-4px]', 'top-[-4px] right-[-4px]', 'bottom-[-4px] left-[-4px]', 'bottom-[-4px] right-[-4px]'].map(pos => (
             <div
               key={pos}
-              className={`absolute ${pos} h-2 w-2 rounded-sm bg-indigo-500 pointer-events-none`}
+              className={`absolute ${pos} h-2 w-2 bg-indigo-500 pointer-events-none`}
             />
           ))}
         </>

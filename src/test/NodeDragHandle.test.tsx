@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { DndContext } from '@dnd-kit/core'
 import { Liquid } from 'liquidjs'
 import { NodeDragHandle } from '../components/print-layout/NodeDragHandle'
@@ -71,5 +71,27 @@ describe('NodeDragHandle', () => {
       />
     )
     expect(container.firstChild).toHaveClass('border-slate-300')
+  })
+
+  it('stops click propagation so parent handler is not triggered', () => {
+    const parentClick = vi.fn()
+    const onSelect = vi.fn()
+    const { getByRole } = render(
+      <div onClick={parentClick}>
+        <DndContext>
+          <NodeDragHandle
+            node={baseNode}
+            liquid={liquid}
+            dataModel={{}}
+            isSelected={false}
+            onSelect={onSelect}
+          />
+        </DndContext>
+      </div>
+    )
+    // dnd-kit renders the node as role="button"
+    fireEvent.click(getByRole('button'))
+    expect(onSelect).toHaveBeenCalled()
+    expect(parentClick).not.toHaveBeenCalled()
   })
 })
