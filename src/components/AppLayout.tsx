@@ -34,6 +34,7 @@ export function AppLayout() {
             </li>
           </ul>
           <button
+            type="button"
             onClick={handleSignOut}
             className="rounded-full border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
           >
