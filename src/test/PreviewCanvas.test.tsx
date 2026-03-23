@@ -7,8 +7,8 @@ import type { LayoutNode } from '../components/print-layout/types'
 const liquid = new Liquid()
 
 const nodes: LayoutNode[] = [
-  { id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Node A</span>' },
-  { id: 'b', x: 50, y: 50, width: 100, height: 50, classes: '', template: '<span>Node B</span>' },
+  { id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Node A</span>', query: null },
+  { id: 'b', x: 50, y: 50, width: 100, height: 50, classes: '', template: '<span>Node B</span>', query: null },
 ]
 
 describe('PreviewCanvas', () => {

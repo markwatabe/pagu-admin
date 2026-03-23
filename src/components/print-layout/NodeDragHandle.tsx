@@ -20,22 +20,38 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     id: node.id,
   })
 
-  // Re-render Liquid template when template or dataModel changes
+  // Re-render Liquid template when template, query, or dataModel changes.
+  // If node.query is set, render the template once per item in dataModel[query].
   useEffect(() => {
     let cancelled = false
-    liquid.parseAndRender(node.template, dataModel)
-      .then(result => {
+    const items = node.query ? dataModel[node.query] : null
+
+    async function render() {
+      try {
+        let result: string
+        if (Array.isArray(items)) {
+          const parts = await Promise.all(
+            items.map((item: unknown) =>
+              liquid.parseAndRender(node.template, { ...dataModel, item })
+            )
+          )
+          result = parts.join('')
+        } else {
+          result = await liquid.parseAndRender(node.template, dataModel)
+        }
         if (!cancelled) {
           setHtml(result)
           setRenderError(null)
         }
-      })
-      .catch(err => {
-        if (!cancelled) setRenderError(String(err?.message ?? err))
-      })
+      } catch (err: unknown) {
+        if (!cancelled) setRenderError(String((err as Error)?.message ?? err))
+      }
+    }
+
+    render()
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [node.template, dataModel])
+  }, [node.template, node.query, dataModel])
 
   const style: React.CSSProperties = {
     position: 'absolute',

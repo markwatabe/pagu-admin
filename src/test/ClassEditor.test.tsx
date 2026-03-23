@@ -7,6 +7,7 @@ const baseNode: LayoutNode = {
   id: 'n1', x: 20, y: 30, width: 200, height: 80,
   classes: 'text-sm font-bold text-left',
   template: '<p>{{ name }}</p>',
+  query: null,
 }
 
 describe('ClassEditor', () => {

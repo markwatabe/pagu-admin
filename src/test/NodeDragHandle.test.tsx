@@ -10,6 +10,7 @@ const liquid = new Liquid()
 const baseNode: LayoutNode = {
   id: 'n1', x: 40, y: 60, width: 200, height: 80,
   classes: 'font-bold', template: '<p>{{ name }}</p>',
+  query: null,
 }
 
 function wrap(ui: React.ReactElement) {
@@ -71,6 +72,37 @@ describe('NodeDragHandle', () => {
       />
     )
     expect(container.firstChild).toHaveClass('border-slate-300')
+  })
+
+  it('renders template once per item when query is set', async () => {
+    wrap(
+      <NodeDragHandle
+        node={{ ...baseNode, query: 'desserts', template: '<div>{{ item.name }}</div>' }}
+        liquid={liquid}
+        dataModel={{ desserts: [{ name: 'Cake' }, { name: 'Pie' }] }}
+        isSelected={false}
+        onSelect={vi.fn()}
+      />
+    )
+    await waitFor(() => {
+      expect(screen.getByText('Cake')).toBeInTheDocument()
+      expect(screen.getByText('Pie')).toBeInTheDocument()
+    })
+  })
+
+  it('renders template once with full dataModel when query is null', async () => {
+    wrap(
+      <NodeDragHandle
+        node={{ ...baseNode, query: null, template: '<div>{{ title }}</div>' }}
+        liquid={liquid}
+        dataModel={{ title: 'Hello' }}
+        isSelected={false}
+        onSelect={vi.fn()}
+      />
+    )
+    await waitFor(() => {
+      expect(screen.getByText('Hello')).toBeInTheDocument()
+    })
   })
 
   it('stops click propagation so parent handler is not triggered', () => {

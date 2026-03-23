@@ -4,6 +4,7 @@ import {
   BG_COLOR_TOKENS, PADDING_TOKENS, BORDER_BOTTOM_TOKENS, BORDER_COLOR_TOKENS,
   getActiveToken, applyToken,
 } from './classTokens'
+import { NAMED_QUERIES } from './queries'
 import type { LayoutNode } from './types'
 
 interface ClassEditorProps {
@@ -96,6 +97,29 @@ export function ClassEditor({ node, onUpdate, onRemove }: ClassEditorProps) {
           Remove
         </button>
       </div>
+
+      {/* Data query */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data Query</p>
+        <div className="flex items-center gap-2">
+          <label htmlFor="query" className="w-14 shrink-0 text-xs text-gray-500">Query</label>
+          <select
+            id="query"
+            aria-label="Query"
+            className="flex-1 rounded border border-gray-200 px-1 py-0.5 text-xs"
+            value={node.query ?? ''}
+            onChange={e => onUpdate({ query: e.target.value || null })}
+          >
+            <option value="">None (static)</option>
+            {NAMED_QUERIES.map(q => <option key={q.key} value={q.key}>{q.label}</option>)}
+          </select>
+        </div>
+        {node.query && (
+          <p className="text-xs text-gray-400 italic">
+            Template renders once per item. Use <code className="bg-gray-100 px-0.5 rounded">{'{{ item.name }}'}</code> etc.
+          </p>
+        )}
+      </section>
 
       {/* Typography */}
       <section className="border-b border-gray-100 px-3 py-3 space-y-2">

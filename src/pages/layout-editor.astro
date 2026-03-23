@@ -1,8 +1,47 @@
 ---
+import { db, MenuItem } from 'astro:db';
 import Layout from '../layouts/Layout.astro';
 import { LayoutEditorPage } from '../components/print-layout/LayoutEditorPage';
+
+const items = await db.select().from(MenuItem).orderBy(MenuItem.section, MenuItem.name);
+
+function formatPrice(cents: number) {
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+}
+
+const serialized = items.map(i => ({
+  name: i.name,
+  description: i.description,
+  section: i.section,
+  price: formatPrice(i.price),
+  price_cents: i.price,
+  available: i.available,
+}));
+
+// Key mapping from section name → query key
+const SECTION_TO_KEY: Record<string, string> = {
+  'Chilled':          'chilled',
+  'Tapas':            'tapas',
+  'Baos':             'baos',
+  'Land & Sea':       'land_and_sea',
+  'Noodles & Rice':   'noodles_and_rice',
+  'Sweet':            'sweet',
+};
+
+// Group by section into named query keys
+const grouped: Record<string, typeof serialized> = {};
+for (const item of serialized) {
+  const key = SECTION_TO_KEY[item.section] ?? item.section.toLowerCase();
+  (grouped[key] ??= []).push(item);
+}
+
+const dataModel = {
+  restaurant: { name: 'Pagu', subtitle: 'Japanese-Spanish Tapas' },
+  all_menu_items: serialized,
+  ...grouped,
+};
 ---
 
 <Layout title="Layout Editor — Pagu" description="Print layout editor">
-  <LayoutEditorPage client:load />
+  <LayoutEditorPage client:load dataModel={dataModel} />
 </Layout>

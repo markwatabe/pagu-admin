@@ -8,6 +8,7 @@ export interface LayoutNode {
   height: number
   classes: string  // Tailwind class string
   template: string // Liquid template source
+  query: string | null // named query key — template renders once per item when set
 }
 
 export interface PrintLayoutState {

@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import type { LayoutNode, PrintLayoutState, UsePrintLayoutReturn } from './types'
 
 const NODE_DEFAULTS: Omit<LayoutNode, 'id'> = {
-  x: 20, y: 20, width: 200, height: 80, classes: '', template: '',
+  x: 20, y: 20, width: 200, height: 80, classes: '', template: '', query: null,
 }
 
 const STATE_DEFAULTS: PrintLayoutState = {
