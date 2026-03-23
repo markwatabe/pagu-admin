@@ -43,7 +43,7 @@ describe('NodeDragHandle', () => {
       />
     )
     await waitFor(() => {
-      expect(screen.getByRole('figure')).toBeInTheDocument() // error <pre>
+      expect(screen.getByRole('alert')).toBeInTheDocument() // error <pre>
     })
   })
 

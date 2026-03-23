@@ -43,7 +43,7 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     top: node.y,
     width: node.width,
     height: node.height,
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
     zIndex: isDragging ? 1000 : undefined,
   }
 
@@ -82,7 +82,7 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
       {/* Content */}
       <div className={`h-full w-full overflow-hidden ${node.classes}`}>
         {renderError ? (
-          <pre role="figure" className="m-1 text-xs text-red-500 whitespace-pre-wrap break-all">
+          <pre role="alert" className="m-1 text-xs text-red-500 whitespace-pre-wrap break-all">
             {renderError}
           </pre>
         ) : (
