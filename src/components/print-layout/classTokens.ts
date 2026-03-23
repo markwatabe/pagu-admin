@@ -17,14 +17,14 @@ export const TEXT_COLOR_TOKENS = [
   'text-indigo-600', 'text-red-600',
 ] as const
 
-type TokenCategory = readonly string[]
+type TokenCategory = ReadonlyArray<string>
 
 export function getActiveToken(classes: string, category: TokenCategory): string | undefined {
-  return classes.split(' ').filter(Boolean).find(t => (category as string[]).includes(t))
+  return classes.split(' ').filter(Boolean).find(t => category.includes(t))
 }
 
 export function applyToken(classes: string, category: TokenCategory, newToken: string): string {
   const tokens = classes.split(' ').filter(Boolean)
-  const filtered = tokens.filter(t => !(category as string[]).includes(t))
+  const filtered = tokens.filter(t => !category.includes(t))
   return [...filtered, newToken].join(' ')
 }

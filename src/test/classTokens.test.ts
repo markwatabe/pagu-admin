@@ -28,6 +28,10 @@ describe('getActiveToken', () => {
   it('does not match text-gray-500 as a size token', () => {
     expect(getActiveToken('text-gray-500', FONT_SIZE_TOKENS)).toBeUndefined()
   })
+
+  it('returns matching alignment token', () => {
+    expect(getActiveToken('font-bold text-center mb-4', TEXT_ALIGN_TOKENS)).toBe('text-center')
+  })
 })
 
 describe('applyToken', () => {
@@ -52,5 +56,9 @@ describe('applyToken', () => {
     expect(result).toContain('text-gray-500')
     expect(result).toContain('text-xl')
     expect(result).not.toContain('text-sm')
+  })
+
+  it('replaces alignment token', () => {
+    expect(applyToken('text-center font-bold', TEXT_ALIGN_TOKENS, 'text-right')).toBe('font-bold text-right')
   })
 })
