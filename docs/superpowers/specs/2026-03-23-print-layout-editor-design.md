@@ -130,14 +130,14 @@ Top-level wrapper. Toolbar at top contains the scale slider and "Add Node" butto
 
 ```tsx
 interface PrintLayoutEditorProps {
-  initialState?: Partial<PrintLayoutState>
+  initialState?: Partial<PrintLayoutState>  // see Liquid Template Rendering for dataModel stability requirements
   onChange?: (state: PrintLayoutState) => void
 }
 ```
 
 ### `PreviewCanvas`
 
-Renders a grey background (`bg-gray-200`) with the page as a white box. Page logical dimensions: `pageWidth × MM_TO_PX` by `pageHeight × MM_TO_PX` px. Applies `transform: scale(scale)` with `transform-origin: top center`. Wraps nodes in a `@dnd-kit` `DndContext` with a custom scale-aware `PointerSensor`.
+Renders a grey background (`bg-gray-200`) with the page as a white box. Page logical dimensions: `pageWidth × MM_TO_PX` by `pageHeight × MM_TO_PX` px. Applies `transform: scale(scale)` with `transform-origin: top center`. Wraps nodes in a `@dnd-kit` `DndContext` with a `PointerSensor` configured with `activationConstraint: { distance: 5 }`. Scale compensation is handled in `onDragEnd`, not in the sensor.
 
 The page container `div` has an `onClick` handler that calls `setSelectedNodeId(null)`. Node click handlers call `e.stopPropagation()` so a node click selects the node without bubbling up to the background handler.
 
@@ -170,7 +170,7 @@ If a node is wider/taller than the page, it is pinned to `x = 0` / `y = 0`. Clam
 **Trust model:** Liquid output is rendered via `dangerouslySetInnerHTML` without sanitization. This editor is intended for use by trusted operators in a private admin UI. If the editor is ever exposed to untrusted input, DOMPurify sanitization should be added before the `dangerouslySetInnerHTML` call.
 
 **Visual states:**
-- **Selected:** blue 2px solid border (`border-indigo-500`), corner handles (8×8px filled squares), `cursor-move`
+- **Selected:** blue 2px solid border (`border-indigo-500`), corner handles (8×8px filled squares), `cursor-move`. Corner handles are purely decorative — they have `pointer-events: none` and do not initiate resize operations.
 - **Unselected:** dashed grey border (`border-dashed border-slate-300`), `cursor-pointer`
 - **Drag active:** blue border, semi-transparent overlay, `cursor-grabbing`
 
