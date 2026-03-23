@@ -27,12 +27,24 @@ export function usePrintLayout(
   const onChangeRef = useRef(onChange)
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
 
+  // Pending notification: set inside updater (ref write is fine), fired after commit
+  const pendingNotifyRef = useRef<PrintLayoutState | null>(null)
+
+  useEffect(() => {
+    if (pendingNotifyRef.current !== null) {
+      const toNotify = pendingNotifyRef.current
+      pendingNotifyRef.current = null
+      onChangeRef.current?.(toNotify)
+    }
+  })
+
   // Helper: update state and optionally fire onChange
   const update = useCallback(
     (updater: (prev: PrintLayoutState) => PrintLayoutState, notify = true) => {
       setState(prev => {
         const next = updater(prev)
-        if (notify) onChangeRef.current?.(next)
+        // Only notify if state actually changed AND notification is requested
+        if (notify && next !== prev) pendingNotifyRef.current = next
         return next
       })
     },
@@ -58,10 +70,13 @@ export function usePrintLayout(
   }, [update])
 
   const updateNode = useCallback((id: string, patch: Partial<LayoutNode>) => {
-    update(prev => ({
-      ...prev,
-      nodes: prev.nodes.map(n => n.id === id ? { ...n, ...patch } : n),
-    }))
+    update(prev => {
+      if (!prev.nodes.some(n => n.id === id)) return prev  // no-op, no onChange
+      return {
+        ...prev,
+        nodes: prev.nodes.map(n => n.id === id ? { ...n, ...patch } : n),
+      }
+    })
   }, [update])
 
   const setSelectedNodeId = useCallback((id: string | null) => {
