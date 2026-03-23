@@ -46,7 +46,7 @@ export function MenuIngredientsPage() {
                           )}
                         </div>
                         <span className="ml-4 shrink-0 text-sm font-medium text-gray-700">
-                          {formatPrice(item.price)}
+                          {formatPrice(item.price ?? 0)}
                         </span>
                       </div>
                       <div className="px-6 py-3">

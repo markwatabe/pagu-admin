@@ -32,9 +32,11 @@ export function MenuRenderPage() {
                 <li key={item.id} className="flex items-start justify-between gap-6">
                   <div>
                     <p className="font-semibold text-gray-900">{item.name}</p>
-                    <p className="mt-0.5 text-sm text-gray-500">{item.description}</p>
+                    {item.description && (
+                      <p className="mt-0.5 text-sm text-gray-500">{item.description}</p>
+                    )}
                   </div>
-                  <p className="shrink-0 font-semibold text-gray-900">{formatPrice(item.price)}</p>
+                  <p className="shrink-0 font-semibold text-gray-900">{formatPrice(item.price ?? 0)}</p>
                 </li>
               ))}
             </ul>
