@@ -31,6 +31,26 @@ describe('PreviewCanvas', () => {
     await screen.findByText('Node B')
   })
 
+  it('does not call onSelectNode(null) when a node is clicked', async () => {
+    const onSelectNode = vi.fn()
+    render(
+      <PreviewCanvas
+        nodes={nodes}
+        scale={0.6}
+        pageWidth={210}
+        pageHeight={297}
+        selectedNodeId={null}
+        liquid={liquid}
+        dataModel={{}}
+        onSelectNode={onSelectNode}
+        onUpdateNode={vi.fn()}
+      />
+    )
+    const nodeContent = await screen.findByText('Node A')
+    fireEvent.click(nodeContent)
+    expect(onSelectNode).not.toHaveBeenCalledWith(null)
+  })
+
   it('calls onSelectNode(null) when page background is clicked', () => {
     const onSelectNode = vi.fn()
     const { getByTestId } = render(

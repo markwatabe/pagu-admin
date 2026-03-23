@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { Liquid } from 'liquidjs'
@@ -26,9 +26,9 @@ export function PreviewCanvas({
   const pageWidthPx = pageWidth * MM_TO_PX
   const pageHeightPx = pageHeight * MM_TO_PX
 
-  // Keep scale in a ref so onDragEnd always has the latest value
+  // Keep scale in a ref so onDragEnd always has the latest value without re-registering
   const scaleRef = useRef(scale)
-  useEffect(() => { scaleRef.current = scale }, [scale])
+  scaleRef.current = scale
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
