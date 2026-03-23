@@ -6,34 +6,37 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@astrojs/db": "^0.20.1",
-    "@astrojs/react": "^5.0.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/utilities": "^3.2.2",
+    "@instantdb/admin": "^0.22.169",
+    "@instantdb/react": "^0.22.169",
     "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^6.0.8",
     "liquidjs": "^10.25.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "tailwindcss": "^4.2.2"
+    "react-router-dom": "^7.13.2",
+    "tailwindcss": "^4.2.2",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.0.1",
-    "drizzle-kit": "^0.31.10",
+    "dotenv": "^17.3.1",
     "jsdom": "^29.0.1",
+    "tsx": "^4.21.0",
+    "vite": "^8.0.2",
     "vitest": "^4.1.0"
   }
 }
