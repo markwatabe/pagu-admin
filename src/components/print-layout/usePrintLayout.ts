@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { LayoutNode, PrintLayoutState, UsePrintLayoutReturn } from './types'
+import type { LayoutNode, PrintLayoutState, UsePrintLayoutReturn, Subdivision } from './types'
 
 const NODE_DEFAULTS: Omit<LayoutNode, 'id'> = {
   x: 20, y: 20, width: 200, height: 80, classes: '', template: '', query: null,
@@ -10,8 +10,9 @@ const STATE_DEFAULTS: PrintLayoutState = {
   selectedNodeId: null,
   scale: 0.6,
   dataModel: {},
-  pageWidth: 210,
-  pageHeight: 297,
+  pageWidth: 215.9,
+  pageHeight: 279.4,
+  subdivision: 'full',
 }
 
 export function usePrintLayout(
@@ -91,6 +92,10 @@ export function usePrintLayout(
     update(prev => ({ ...prev, dataModel }))
   }, [update])
 
+  const setSubdivision = useCallback((subdivision: Subdivision) => {
+    update(prev => ({ ...prev, subdivision }), false) // no onChange — UI-only state
+  }, [update])
+
   return {
     ...state,
     addNode,
@@ -99,5 +104,6 @@ export function usePrintLayout(
     setSelectedNodeId,
     setScale,
     setDataModel,
+    setSubdivision,
   }
 }

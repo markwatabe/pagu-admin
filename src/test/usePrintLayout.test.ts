@@ -9,8 +9,9 @@ describe('usePrintLayout', () => {
       expect(result.current.nodes).toEqual([])
       expect(result.current.selectedNodeId).toBeNull()
       expect(result.current.scale).toBe(0.6)
-      expect(result.current.pageWidth).toBe(210)
-      expect(result.current.pageHeight).toBe(297)
+      expect(result.current.pageWidth).toBe(215.9)   // letter width
+      expect(result.current.pageHeight).toBe(279.4)  // letter height
+      expect(result.current.subdivision).toBe('full')
     })
 
     it('merges provided initialState over defaults', () => {
@@ -19,7 +20,7 @@ describe('usePrintLayout', () => {
       )
       expect(result.current.scale).toBe(0.8)
       expect(result.current.pageWidth).toBe(148)
-      expect(result.current.pageHeight).toBe(297) // default
+      expect(result.current.pageHeight).toBe(279.4) // letter default
     })
   })
 
@@ -57,7 +58,7 @@ describe('usePrintLayout', () => {
   describe('removeNode', () => {
     it('removes a node by id', () => {
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }] })
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] })
       )
       act(() => { result.current.removeNode('x') })
       expect(result.current.nodes).toHaveLength(0)
@@ -66,7 +67,7 @@ describe('usePrintLayout', () => {
     it('clears selectedNodeId if removed node was selected', () => {
       const { result } = renderHook(() =>
         usePrintLayout({
-          nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }],
+          nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }],
           selectedNodeId: 'x',
         })
       )
@@ -78,7 +79,7 @@ describe('usePrintLayout', () => {
   describe('updateNode', () => {
     it('patches only specified fields', () => {
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 10, y: 20, width: 100, height: 50, classes: 'font-bold', template: 'hi' }] })
+        usePrintLayout({ nodes: [{ id: 'x', x: 10, y: 20, width: 100, height: 50, classes: 'font-bold', template: 'hi', query: null }] })
       )
       act(() => { result.current.updateNode('x', { x: 99 }) })
       const node = result.current.nodes[0]
@@ -130,7 +131,7 @@ describe('usePrintLayout', () => {
     it('fires on removeNode', () => {
       const onChange = vi.fn()
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }] }, onChange)
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] }, onChange)
       )
       act(() => { result.current.removeNode('x') })
       expect(onChange).toHaveBeenCalledOnce()
@@ -139,7 +140,7 @@ describe('usePrintLayout', () => {
     it('fires on updateNode', () => {
       const onChange = vi.fn()
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }] }, onChange)
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] }, onChange)
       )
       act(() => { result.current.updateNode('x', { x: 50 }) })
       expect(onChange).toHaveBeenCalledOnce()
@@ -164,6 +165,28 @@ describe('usePrintLayout', () => {
       const { result } = renderHook(() => usePrintLayout({}, onChange))
       act(() => { result.current.setSelectedNodeId('abc') })
       expect(onChange).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('setSubdivision', () => {
+    it('updates subdivision', () => {
+      const { result } = renderHook(() => usePrintLayout())
+      act(() => { result.current.setSubdivision('cols2') })
+      expect(result.current.subdivision).toBe('cols2')
+    })
+
+    it('does NOT fire onChange', () => {
+      const onChange = vi.fn()
+      const { result } = renderHook(() => usePrintLayout({}, onChange))
+      act(() => { result.current.setSubdivision('grid4') })
+      expect(onChange).not.toHaveBeenCalled()
+    })
+
+    it('initialState can override subdivision', () => {
+      const { result } = renderHook(() =>
+        usePrintLayout({ subdivision: 'rows2' })
+      )
+      expect(result.current.subdivision).toBe('rows2')
     })
   })
 })
