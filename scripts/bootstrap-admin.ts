@@ -17,7 +17,7 @@ if (!ADMIN_TOKEN || !APP_ID) {
 const db = init({ appId: APP_ID, adminToken: ADMIN_TOKEN });
 
 async function bootstrap() {
-  // 1. Find the $users auth identity by email.
+  // Find the $users auth identity by email.
   // db.auth.getUser() throws if the user is not found — catch it explicitly.
   let authUser: { id: string };
   try {
@@ -28,21 +28,9 @@ async function bootstrap() {
   }
   console.log(`Found $users record: ${authUser.id}`);
 
-  // 2. Find the users profile record by email
-  const result = await db.query({ users: { $: { where: { email } } } });
-  const profile = result.users?.[0];
-  if (!profile) {
-    console.error(`No users profile found with email ${email}. Run the migration script first.`);
-    process.exit(1);
-  }
-  console.log(`Found users profile: ${profile.id}`);
-
-  // 3. Set is_admin and link $users → users.
-  // The link must be established FROM the $users namespace (forward link direction).
-  // The forward link name is 'users' (configured in the dashboard as $users.users).
+  // Set is_admin directly on the $users record — no separate users profile needed.
   await db.transact([
-    db.tx.users[profile.id].update({ is_admin: true }),
-    db.tx['$users'][authUser.id].link({ users: profile.id }),
+    db.tx['$users'][authUser.id].update({ is_admin: true }),
   ]);
 
   console.log(`Done. ${email} is now an admin.`);

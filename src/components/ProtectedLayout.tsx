@@ -8,9 +8,9 @@ export function ProtectedLayout() {
   // Query the app profile linked to the current auth user.
   // Pass null when there is no user to skip the query.
   const { isLoading: profileLoading, data } = db.useQuery(
-    user ? { users: { $: { where: { '$users.id': user.id } } } } : null
+    user ? { '$users': { $: { where: { id: user.id } } } } : null
   );
-  const profile = data?.users?.[0];
+  const profile = data?.['$users']?.[0];
 
   if (isLoading || (user && profileLoading)) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;

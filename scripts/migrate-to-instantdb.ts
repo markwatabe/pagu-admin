@@ -152,13 +152,6 @@ const reviews = [
   { id: 8, author: 'Hana Y.',   rating: 5, body: 'Authentic flavours and lovely vibes. The mochi platter was a perfect end to the meal!', source: 'In-app', replied: false, createdAt: '2026-02-18' },
 ];
 
-const users = [
-  { id: 1, name: 'Alice Nguyen', email: 'alice@pagu.app', role: 'Owner',   active: true,  createdAt: '2024-01-10', is_admin: true },
-  { id: 2, name: 'Bob Tanaka',   email: 'bob@pagu.app',   role: 'Manager', active: true,  createdAt: '2024-02-14', is_admin: false },
-  { id: 3, name: 'Cara Diaz',    email: 'cara@pagu.app',  role: 'Staff',   active: true,  createdAt: '2024-03-01', is_admin: false },
-  { id: 4, name: 'Dan Osei',     email: 'dan@pagu.app',   role: 'Staff',   active: false, createdAt: '2024-03-20', is_admin: false },
-  { id: 5, name: 'Eva Kim',      email: 'eva@pagu.app',   role: 'Manager', active: true,  createdAt: '2024-04-05', is_admin: false },
-];
 
 // measuredIngredients: [{ id, menuItemId, ingredientId }]
 const measuredIngredients = [
@@ -249,20 +242,6 @@ async function migrate() {
         source: r.source,
         replied: r.replied,
         createdAt: r.createdAt,
-      })
-    )
-  );
-
-  console.log('Migrating users…');
-  await db.transact(
-    users.map((u) =>
-      db.tx.users[seedId('user', u.id)].update({
-        name: u.name,
-        email: u.email,
-        role: u.role,
-        active: u.active,
-        createdAt: u.createdAt,
-        is_admin: u.is_admin,
       })
     )
   );

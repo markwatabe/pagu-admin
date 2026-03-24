@@ -2,12 +2,12 @@ import { db } from '../lib/db';
 import { Spinner } from '../components/Spinner';
 
 export function UsersPage() {
-  const { isLoading, error, data } = db.useQuery({ users: {} });
+  const { isLoading, error, data } = db.useQuery({ '$users': {} });
 
   if (isLoading) return <Spinner />;
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
 
-  const users = [...(data?.users ?? [])].sort(
+  const users = [...(data?.['$users'] ?? [])].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
