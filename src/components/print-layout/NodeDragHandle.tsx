@@ -1,27 +1,25 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties, MouseEvent } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import type { Liquid } from 'liquidjs'
 import type { LayoutNode } from './types'
 
-interface NodeDragHandleProps {
-  node: LayoutNode
-  liquid: Liquid
-  dataModel: Record<string, unknown>
-  isSelected: boolean
-  onSelect: () => void
-}
-
-export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }: NodeDragHandleProps) {
+/**
+ * Renders a node's Liquid template against dataModel.
+ * `liquid` must be a stable reference (e.g. from useMemo) — it is intentionally
+ * excluded from the dependency array because recreating the Liquid instance on
+ * every render would cause infinite re-renders. This invariant is enforced at the
+ * call site in PrintLayoutEditor via `useMemo(() => new Liquid(), [])`.
+ */
+export function useNodeHtml(
+  node: LayoutNode,
+  liquid: Liquid,
+  dataModel: Record<string, unknown>,
+): { html: string; renderError: string | null } {
   const [html, setHtml] = useState('')
   const [renderError, setRenderError] = useState<string | null>(null)
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: node.id,
-  })
-
-  // Re-render Liquid template when template, query, or dataModel changes.
-  // If node.query is set, render the template once per item in dataModel[query].
   useEffect(() => {
     let cancelled = false
     const items = node.query ? dataModel[node.query] : null
@@ -51,9 +49,28 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     render()
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // liquid is intentionally excluded — see JSDoc above
   }, [node.template, node.query, dataModel])
 
-  const style: React.CSSProperties = {
+  return { html, renderError }
+}
+
+interface NodeDragHandleProps {
+  node: LayoutNode
+  liquid: Liquid
+  dataModel: Record<string, unknown>
+  isSelected: boolean
+  onSelect: () => void
+}
+
+export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }: NodeDragHandleProps) {
+  const { html, renderError } = useNodeHtml(node, liquid, dataModel)
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: node.id,
+  })
+
+  const style: CSSProperties = {
     position: 'absolute',
     left: node.x,
     top: node.y,
@@ -63,7 +80,7 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     zIndex: isDragging ? 1000 : undefined,
   }
 
-  function handleClick(e: React.MouseEvent) {
+  function handleClick(e: MouseEvent) {
     e.stopPropagation()
     onSelect()
   }
