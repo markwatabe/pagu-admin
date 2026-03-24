@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { ingredientRoutes } from './routes/ingredients.js';
+import { chatRoutes } from './routes/chat.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -21,6 +22,7 @@ if (!isProduction) {
 }
 
 app.route('/api/ingredients', ingredientRoutes(repoPath));
+app.route('/api/chat', chatRoutes(repoPath));
 
 // In production, serve the built frontend
 if (isProduction) {
