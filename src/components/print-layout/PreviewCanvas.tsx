@@ -2,8 +2,9 @@ import { useRef } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { Liquid } from 'liquidjs'
-import { MM_TO_PX } from './types'
+import { MM_TO_PX, subdivisionGrid, type Subdivision } from './types'
 import { NodeDragHandle } from './NodeDragHandle'
+import { NodeMirror } from './NodeMirror'
 import type { LayoutNode } from './types'
 
 interface PreviewCanvasProps {
@@ -11,6 +12,7 @@ interface PreviewCanvasProps {
   scale: number
   pageWidth: number   // mm
   pageHeight: number  // mm
+  subdivision: Subdivision
   selectedNodeId: string | null
   liquid: Liquid
   dataModel: Record<string, unknown>
@@ -19,12 +21,17 @@ interface PreviewCanvasProps {
 }
 
 export function PreviewCanvas({
-  nodes, scale, pageWidth, pageHeight,
+  nodes, scale, pageWidth, pageHeight, subdivision,
   selectedNodeId, liquid, dataModel,
   onSelectNode, onUpdateNode,
 }: PreviewCanvasProps) {
-  const pageWidthPx = pageWidth * MM_TO_PX
+  const { cols, rows } = subdivisionGrid(subdivision)
+  // All dimensions are in logical (pre-scale) px — same unit as node.x/y/width/height.
+  // The CSS transform: scale(scale) is applied to the container, not to these values.
+  const pageWidthPx  = pageWidth  * MM_TO_PX
   const pageHeightPx = pageHeight * MM_TO_PX
+  const cellWidthPx  = pageWidthPx  / cols
+  const cellHeightPx = pageHeightPx / rows
 
   // Keep scale in a ref so onDragEnd always has the latest value without re-registering
   const scaleRef = useRef(scale)
@@ -42,8 +49,9 @@ export function PreviewCanvas({
 
     const newX = node.x + delta.x / scaleRef.current
     const newY = node.y + delta.y / scaleRef.current
-    const clampedX = Math.max(0, Math.min(newX, pageWidthPx - node.width))
-    const clampedY = Math.max(0, Math.min(newY, pageHeightPx - node.height))
+    // Clamp so the node's full bounding box stays within the edit cell (col=0, row=0).
+    const clampedX = Math.max(0, Math.min(newX, cellWidthPx  - node.width))
+    const clampedY = Math.max(0, Math.min(newY, cellHeightPx - node.height))
 
     onUpdateNode(nodeId, { x: clampedX, y: clampedY })
   }
@@ -66,6 +74,7 @@ export function PreviewCanvas({
             className="bg-white shadow-lg"
             onClick={() => onSelectNode(null)}
           >
+            {/* Edit cell nodes — col=0, row=0 */}
             {nodes.map(node => (
               <NodeDragHandle
                 key={node.id}
@@ -76,6 +85,39 @@ export function PreviewCanvas({
                 onSelect={() => onSelectNode(node.id)}
               />
             ))}
+
+            {/* Subdivision dividers */}
+            {cols > 1 && (
+              <div
+                style={{ position: 'absolute', left: cellWidthPx, top: 0, width: 1, height: pageHeightPx }}
+                className="bg-gray-300 pointer-events-none"
+              />
+            )}
+            {rows > 1 && (
+              <div
+                style={{ position: 'absolute', top: cellHeightPx, left: 0, height: 1, width: pageWidthPx }}
+                className="bg-gray-300 pointer-events-none"
+              />
+            )}
+
+            {/* Mirror cells — all (col, row) pairs except (0, 0) */}
+            {Array.from({ length: cols }, (_, col) =>
+              Array.from({ length: rows }, (_, row) => {
+                if (col === 0 && row === 0) return null  // edit cell — no mirror
+                const offsetX = col * cellWidthPx
+                const offsetY = row * cellHeightPx
+                return nodes.map(node => (
+                  <NodeMirror
+                    key={`${col}-${row}-${node.id}`}
+                    node={node}
+                    liquid={liquid}
+                    dataModel={dataModel}
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                  />
+                ))
+              })
+            )}
           </div>
         </div>
       </DndContext>
