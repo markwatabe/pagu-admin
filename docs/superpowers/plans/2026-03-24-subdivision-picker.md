@@ -88,12 +88,21 @@
   })
   ```
 
-  Also add `query: null` to every inline `LayoutNode` literal in the file that is missing it. The affected lines are in `removeNode`, `updateNode`, and `onChange` describe blocks. Find every object of the form `{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }` and add `query: null` to it:
+  Also add `query: null` to every inline `LayoutNode` literal in the file that is missing the `query` field. There are 5 such literals — they appear in the `removeNode`, `updateNode`, and `onChange` describe blocks. The fixtures have slightly different shapes; search for any object literal assigned to a node in those blocks and add `query: null` to it. Examples of lines that need updating:
 
   ```ts
-  // All fixtures that need query: null added — there are 5 of them:
+  // Before (removeNode, line 60):
+  { id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '' }
+  // After:
   { id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }
+
+  // Before (updateNode, line 81 — note different x/y/classes/template values):
+  { id: 'x', x: 10, y: 20, width: 100, height: 50, classes: 'font-bold', template: 'hi' }
+  // After:
+  { id: 'x', x: 10, y: 20, width: 100, height: 50, classes: 'font-bold', template: 'hi', query: null }
   ```
+
+  Apply the same treatment to all remaining fixtures in the `onChange` tests (lines ~133, ~142).
 
 - [ ] **Step 2: Run tests — confirm new tests fail**
 
@@ -203,7 +212,7 @@
   pnpm test -- --reporter=verbose 2>&1 | tail -20
   ```
 
-  Expected: all tests pass (the `PreviewCanvas` tests will have TypeScript warnings about the missing `subdivision` prop but should still pass at runtime since the prop is optional-compatible in JS — if they error, fix by adding `subdivision="full"` to those renders now).
+  Expected: all tests pass. Note: if you are running `tsc --noEmit` in parallel, the `PreviewCanvas` test file will produce a **TypeScript compile error** (not a warning) because the required `subdivision` prop is now missing from its renders. Fix it immediately by adding `subdivision="full"` to those three renders now rather than waiting for Task 4.
 
 - [ ] **Step 6: Commit**
 
@@ -633,64 +642,63 @@
       expect(onSelectNode).toHaveBeenCalledWith(null)
     })
 
-  // New tests:
-  it('renders NodeMirror copies in non-edit cells when subdivision is cols2', async () => {
-    render(
-      <PreviewCanvas
-        nodes={[{ id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Cell</span>', query: null }]}
-        scale={1}
-        pageWidth={215.9}
-        pageHeight={279.4}
-        subdivision="cols2"
-        selectedNodeId={null}
-        liquid={liquid}
-        dataModel={{}}
-        onSelectNode={vi.fn()}
-        onUpdateNode={vi.fn()}
-      />
-    )
-    // Content appears twice: once in edit cell, once in mirror
-    const cells = await screen.findAllByText('Cell')
-    expect(cells).toHaveLength(2)
-  })
+    it('renders NodeMirror copies in non-edit cells when subdivision is cols2', async () => {
+      render(
+        <PreviewCanvas
+          nodes={[{ id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Cell</span>', query: null }]}
+          scale={1}
+          pageWidth={215.9}
+          pageHeight={279.4}
+          subdivision="cols2"
+          selectedNodeId={null}
+          liquid={liquid}
+          dataModel={{}}
+          onSelectNode={vi.fn()}
+          onUpdateNode={vi.fn()}
+        />
+      )
+      // Content appears twice: once in edit cell, once in mirror
+      const cells = await screen.findAllByText('Cell')
+      expect(cells).toHaveLength(2)
+    })
 
-  it('renders 4 copies when subdivision is grid4', async () => {
-    render(
-      <PreviewCanvas
-        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Q</span>', query: null }]}
-        scale={1}
-        pageWidth={215.9}
-        pageHeight={279.4}
-        subdivision="grid4"
-        selectedNodeId={null}
-        liquid={liquid}
-        dataModel={{}}
-        onSelectNode={vi.fn()}
-        onUpdateNode={vi.fn()}
-      />
-    )
-    const cells = await screen.findAllByText('Q')
-    expect(cells).toHaveLength(4)
-  })
+    it('renders 4 copies when subdivision is grid4', async () => {
+      render(
+        <PreviewCanvas
+          nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Q</span>', query: null }]}
+          scale={1}
+          pageWidth={215.9}
+          pageHeight={279.4}
+          subdivision="grid4"
+          selectedNodeId={null}
+          liquid={liquid}
+          dataModel={{}}
+          onSelectNode={vi.fn()}
+          onUpdateNode={vi.fn()}
+        />
+      )
+      const cells = await screen.findAllByText('Q')
+      expect(cells).toHaveLength(4)
+    })
 
-  it('renders no mirrors when subdivision is full', async () => {
-    render(
-      <PreviewCanvas
-        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Solo</span>', query: null }]}
-        scale={1}
-        pageWidth={215.9}
-        pageHeight={279.4}
-        subdivision="full"
-        selectedNodeId={null}
-        liquid={liquid}
-        dataModel={{}}
-        onSelectNode={vi.fn()}
-        onUpdateNode={vi.fn()}
-      />
-    )
-    const cells = await screen.findAllByText('Solo')
-    expect(cells).toHaveLength(1)
-  })
+    it('renders no mirrors when subdivision is full', async () => {
+      render(
+        <PreviewCanvas
+          nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Solo</span>', query: null }]}
+          scale={1}
+          pageWidth={215.9}
+          pageHeight={279.4}
+          subdivision="full"
+          selectedNodeId={null}
+          liquid={liquid}
+          dataModel={{}}
+          onSelectNode={vi.fn()}
+          onUpdateNode={vi.fn()}
+        />
+      )
+      const cells = await screen.findAllByText('Solo')
+      expect(cells).toHaveLength(1)
+    })
   })
   ```
 
