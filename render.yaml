@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: pagu-admin
+    runtime: docker
+    repo: https://github.com/markwatabe/pagu-admin
+    branch: main
+    plan: starter
+    region: ohio
+    autoDeploy: true
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    disk:
+      name: pagu-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: VITE_INSTANT_APP_ID
+        sync: false
+      - key: INSTANT_ADMIN_TOKEN
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: REPO_PATH
+        value: /data/pagu-db
+      - key: PORT
+        value: "10000"
+      - key: NODE_ENV
+        value: production
