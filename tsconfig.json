@@ -1,18 +1,12 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "strict": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "strict": true
   },
-  "include": ["src", "scripts"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["scripts"]
 }

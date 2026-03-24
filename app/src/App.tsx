@@ -10,6 +10,8 @@ import { MenuRenderPage } from './pages/MenuRenderPage';
 import { MenuRenderPrintPage } from './pages/MenuRenderPrintPage';
 import { MenuPreviewPage } from './pages/MenuPreviewPage';
 import { LayoutEditorPage } from './pages/LayoutEditorPage';
+import { IngredientPage } from './pages/IngredientPage';
+import { IngredientsPage } from './pages/IngredientsPage';
 
 export function App() {
   return (
@@ -25,6 +27,8 @@ export function App() {
             <Route path="/menu-builder" element={<MenuBuilderPage />} />
             <Route path="/menu-ingredients" element={<MenuIngredientsPage />} />
             <Route path="/menu-render" element={<MenuRenderPage />} />
+            <Route path="/ingredients" element={<IngredientsPage />} />
+            <Route path="/ingredient/:id" element={<IngredientPage />} />
           </Route>
           {/* Full-page views — no AppLayout nav */}
           <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />

@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # git worktrees
 .worktrees/
+
+REPO/
