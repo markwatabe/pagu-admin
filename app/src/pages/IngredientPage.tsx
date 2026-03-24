@@ -1,33 +1,55 @@
-import { useParams } from 'react-router-dom';
-import { db } from '../lib/db';
+import { useParams, Link } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
+import { useEffect, useState } from 'react';
+
+interface ResolvedIngredient {
+  amount: number;
+  unit: string;
+  ingredientId: string;
+  name: string;
+}
+
+interface IngredientDetail {
+  id: string;
+  name: string;
+  production_type: string;
+  ingredient_type?: string;
+  type?: string;
+  ingredients?: ResolvedIngredient[];
+  instructions?: string[];
+  directions?: string[];
+  equipment?: string[];
+}
 
 export function IngredientPage() {
   const { id } = useParams<{ id: string }>();
+  const [data, setData] = useState<IngredientDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { isLoading, error, data } = db.useQuery({
-    ingredients: {
-      $: { where: { id: id! } },
-      measuredIngredients: { ingredient: {} },
-    },
-  });
+  useEffect(() => {
+    fetch(`/api/ingredients/${id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? 'Ingredient not found' : `HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(setData)
+      .catch((e) => setError(e.message));
+  }, [id]);
 
-  if (isLoading) return <Spinner />;
-  if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+  if (!data) return <Spinner />;
 
-  const ingredient = data?.ingredients?.[0];
-  if (!ingredient) return <div className="p-8 text-gray-500">Ingredient not found.</div>;
-
-  const recipe = (ingredient.measuredIngredients ?? []).sort(
-    (a, b) => (b.amount ?? 0) - (a.amount ?? 0)
-  );
-  const totalWeight = recipe.reduce((sum, mi) => sum + (mi.amount ?? 0), 0);
+  const recipe = (data.ingredients ?? []).sort((a, b) => b.amount - a.amount);
+  const totalWeight = recipe.reduce((sum, r) => sum + r.amount, 0);
 
   return (
     <section className="mx-auto max-w-3xl px-6 py-16">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 capitalize">
-          {ingredient.name}
+        <Link to="/ingredients" className="text-sm text-indigo-600 hover:text-indigo-800">
+          &larr; All Ingredients
+        </Link>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+          {data.name}
         </h1>
         {recipe.length > 0 && (
           <p className="mt-1 text-gray-500">
@@ -51,14 +73,20 @@ export function IngredientPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {recipe.map((mi) => {
-                const name = mi.ingredient?.[0]?.name ?? '—';
-                const pct = totalWeight > 0 ? ((mi.amount ?? 0) / totalWeight) * 100 : 0;
+              {recipe.map((r) => {
+                const pct = totalWeight > 0 ? (r.amount / totalWeight) * 100 : 0;
                 return (
-                  <tr key={mi.id} className="transition hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium text-gray-900 capitalize">{name}</td>
+                  <tr key={r.ingredientId} className="transition hover:bg-gray-50">
+                    <td className="px-6 py-3 font-medium text-gray-900">
+                      <Link
+                        to={`/ingredient/${r.ingredientId}`}
+                        className="hover:text-indigo-600"
+                      >
+                        {r.name}
+                      </Link>
+                    </td>
                     <td className="px-6 py-3 text-right text-gray-600">
-                      {mi.amount ?? '—'} {mi.unit ?? ''}
+                      {r.amount} {r.unit}
                     </td>
                     <td className="px-6 py-3 text-right text-gray-400">
                       {pct.toFixed(1)}%
@@ -68,6 +96,44 @@ export function IngredientPage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {data.instructions && data.instructions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mb-3 text-lg font-semibold text-gray-700">Instructions</h2>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-gray-700">
+            {data.instructions.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {data.directions && data.directions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mb-3 text-lg font-semibold text-gray-700">Directions</h2>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
+            {data.directions.map((d, i) => (
+              <li key={i}>{d}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.equipment && data.equipment.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mb-3 text-lg font-semibold text-gray-700">Equipment</h2>
+          <ul className="flex flex-wrap gap-2">
+            {data.equipment.map((e) => (
+              <li
+                key={e}
+                className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
+              >
+                {e}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </section>

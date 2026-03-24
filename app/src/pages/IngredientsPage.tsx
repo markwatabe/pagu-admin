@@ -1,24 +1,35 @@
 import { Link } from 'react-router-dom';
-import { db } from '../lib/db';
 import { Spinner } from '../components/Spinner';
+import { useEffect, useState } from 'react';
+
+interface IngredientSummary {
+  id: string;
+  name: string;
+  production_type: string;
+  ingredient_type?: string;
+  type?: string;
+  hasRecipe: boolean;
+}
 
 export function IngredientsPage() {
-  const { isLoading, error, data } = db.useQuery({
-    ingredients: { measuredIngredients: {} },
-  });
+  const [ingredients, setIngredients] = useState<IngredientSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (isLoading) return <Spinner />;
-  if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
+  useEffect(() => {
+    fetch('/api/ingredients')
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(setIngredients)
+      .catch((e) => setError(e.message));
+  }, []);
 
-  const ingredients = [...(data?.ingredients ?? [])].sort((a, b) =>
-    (a.name ?? '').localeCompare(b.name ?? '')
-  );
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+  if (!ingredients) return <Spinner />;
 
-  const hasRecipe = (ing: (typeof ingredients)[number]) =>
-    (ing.measuredIngredients ?? []).length > 0;
-
-  const withRecipe = ingredients.filter(hasRecipe);
-  const withoutRecipe = ingredients.filter((i) => !hasRecipe(i));
+  const withRecipe = ingredients.filter((i) => i.hasRecipe);
+  const withoutRecipe = ingredients.filter((i) => !i.hasRecipe);
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-16">
@@ -39,10 +50,8 @@ export function IngredientsPage() {
                 to={`/ingredient/${ing.id}`}
                 className="flex items-center justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
               >
-                <span className="font-semibold text-gray-900 capitalize">{ing.name}</span>
-                <span className="text-sm text-gray-400">
-                  {ing.measuredIngredients?.length ?? 0} ingredients &rarr;
-                </span>
+                <span className="font-semibold text-gray-900">{ing.name}</span>
+                <span className="text-sm text-gray-400">&rarr;</span>
               </Link>
             ))}
           </div>
@@ -57,7 +66,7 @@ export function IngredientsPage() {
               <li key={ing.id}>
                 <Link
                   to={`/ingredient/${ing.id}`}
-                  className="block px-6 py-3 text-sm text-gray-700 capitalize transition hover:bg-gray-50 hover:text-indigo-600"
+                  className="block px-6 py-3 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
                 >
                   {ing.name}
                 </Link>
