@@ -219,12 +219,18 @@ Grep for `@/` imports and verify they resolve correctly with the new alias (`src
 
 - [ ] **Step 11: Add `VITE_INSTANT_APP_ID` to `.env`**
 
-Create `.env` at root (for build-time vars, committed to repo):
-```
-VITE_INSTANT_APP_ID=your-app-id-here
+Create `.env.example` at root (committed) and `.env` (gitignored):
+```bash
+# .env.example (committed — shows what's needed)
+VITE_INSTANT_APP_ID=
+
+# .env (gitignored — actual values for local dev)
+VITE_INSTANT_APP_ID=<your-actual-app-id>
 ```
 
-Note: `.dev.vars` is for Worker runtime secrets (gitignored). `.env` is for Vite build-time vars.
+Add `.env` to `.gitignore`. For production builds, set `VITE_INSTANT_APP_ID` as a Cloudflare environment variable (in wrangler.jsonc `vars` or via `wrangler vars set`).
+
+Note: `.dev.vars` is for Worker runtime secrets. `.env` is for Vite build-time vars. Both are gitignored.
 
 - [ ] **Step 12: Run `pnpm install`**
 
@@ -340,7 +346,8 @@ export class GitHubClient {
   ): Promise<void> {
     const body: Record<string, string> = {
       message,
-      content: btoa(content),
+      // Encode safely for non-ASCII content (e.g., Japanese text)
+      content: btoa(String.fromCharCode(...new TextEncoder().encode(content))),
     };
     if (sha) body.sha = sha;
 
@@ -856,7 +863,7 @@ export function chatRoutes() {
       while (true) {
         // Use streaming for real-time text delivery
         const streamResponse = client.messages.stream({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 4096,
           system: SYSTEM_PROMPT,
           tools: AGENT_TOOLS,
@@ -997,7 +1004,10 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
     setToolEvents([]);
 
     try {
-      const token = await db.auth.createToken();
+      // Get the current user's refresh token for auth header
+      // Note: verify the exact InstantDB API for getting user tokens
+      // at implementation time — may be user.token or db.auth.getToken()
+      const token = user.refresh_token;
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {
