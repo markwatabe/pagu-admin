@@ -1,6 +1,6 @@
 import type { Liquid } from 'liquidjs'
 import type { LayoutNode } from './types'
-import { useNodeHtml } from './NodeDragHandle'
+import { useNodeHtml } from './useNodeHtml'
 
 interface NodeMirrorProps {
   node: LayoutNode
