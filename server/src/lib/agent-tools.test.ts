@@ -56,4 +56,12 @@ describe('executeToolCall', () => {
       'Add new ingredient',
     );
   });
+
+  it('read_ingredient rejects path traversal', async () => {
+    vi.mocked(fs.readFile).mockRejectedValue(new Error('ENOENT: no such file or directory'));
+    const result = await executeToolCall(REPO, 'read_ingredient', { id: '../../.env' });
+    expect(result).toContain('Error');
+    // Verify the path was sanitized — traversal was stripped to just the basename
+    expect(fs.readFile).toHaveBeenCalledWith('/data/pagu-db/ingredients/.env.json', 'utf-8');
+  });
 });

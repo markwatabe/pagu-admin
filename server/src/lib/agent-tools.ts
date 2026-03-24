@@ -39,6 +39,14 @@ export const AGENT_TOOLS: Tool[] = [
   },
 ];
 
+function sanitizeId(id: string): string {
+  const cleaned = path.basename(id).replace(/\.json$/, '');
+  if (!cleaned || cleaned === '.' || cleaned === '..') {
+    throw new Error(`Invalid ingredient ID: ${id}`);
+  }
+  return cleaned;
+}
+
 export async function executeToolCall(
   repoPath: string,
   toolName: string,
@@ -48,22 +56,36 @@ export async function executeToolCall(
 
   switch (toolName) {
     case 'list_ingredients': {
-      const files = await readdir(ingredientsDir);
-      const jsonFiles = files.filter((f) => f.endsWith('.json')).sort();
-      return JSON.stringify(jsonFiles);
+      try {
+        const files = await readdir(ingredientsDir);
+        const jsonFiles = files.filter((f) => f.endsWith('.json')).sort();
+        return JSON.stringify(jsonFiles);
+      } catch (err) {
+        return `Error listing ingredients: ${err instanceof Error ? err.message : String(err)}`;
+      }
     }
     case 'read_ingredient': {
-      const content = await readFile(
-        path.join(ingredientsDir, `${input.id}.json`),
-        'utf-8',
-      );
-      return content;
+      try {
+        const safeId = sanitizeId(input.id);
+        const content = await readFile(
+          path.join(ingredientsDir, `${safeId}.json`),
+          'utf-8',
+        );
+        return content;
+      } catch (err) {
+        return `Error reading ingredient ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
+      }
     }
     case 'write_ingredient': {
-      const filePath = path.join(ingredientsDir, `${input.id}.json`);
-      await writeFile(filePath, input.content, 'utf-8');
-      await gitCommitAndPush(repoPath, `ingredients/${input.id}.json`, input.message);
-      return `Successfully wrote ingredients/${input.id}.json and pushed to remote`;
+      try {
+        const safeId = sanitizeId(input.id);
+        const filePath = path.join(ingredientsDir, `${safeId}.json`);
+        await writeFile(filePath, input.content, 'utf-8');
+        await gitCommitAndPush(repoPath, `ingredients/${safeId}.json`, input.message);
+        return `Successfully wrote ingredients/${safeId}.json and pushed to remote`;
+      } catch (err) {
+        return `Error writing ingredient ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
+      }
     }
     default:
       return `Unknown tool: ${toolName}`;
