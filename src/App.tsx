@@ -9,6 +9,7 @@ import { MenuIngredientsPage } from './pages/MenuIngredientsPage';
 import { MenuRenderPage } from './pages/MenuRenderPage';
 import { MenuRenderPrintPage } from './pages/MenuRenderPrintPage';
 import { MenuPreviewPage } from './pages/MenuPreviewPage';
+import { LayoutEditorPage } from './pages/LayoutEditorPage';
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
           {/* Full-page views — no AppLayout nav */}
           <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />
           <Route path="/menu-preview" element={<MenuPreviewPage />} />
+          <Route path="/layout-editor" element={<LayoutEditorPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

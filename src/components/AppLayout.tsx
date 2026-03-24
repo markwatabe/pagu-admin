@@ -32,6 +32,11 @@ export function AppLayout() {
                 Reviews
               </Link>
             </li>
+            <li>
+              <Link to="/layout-editor" className="transition hover:text-indigo-600">
+                Layout Editor
+              </Link>
+            </li>
           </ul>
           <button
             type="button"
