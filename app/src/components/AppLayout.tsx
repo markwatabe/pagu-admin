@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { db } from '../lib/db';
+import { ChatPanel } from './ChatPanel';
 
 export function AppLayout() {
+  const [chatOpen, setChatOpen] = useState(false);
   const navigate = useNavigate();
 
   function handleSignOut() {
@@ -43,13 +46,22 @@ export function AppLayout() {
               </Link>
             </li>
           </ul>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="rounded-full border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setChatOpen((o) => !o)}
+              className="rounded-full border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
+            >
+              Assistant
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-full border border-gray-200 px-5 py-2 text-sm font-semibold text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
+            >
+              Sign out
+            </button>
+          </div>
         </nav>
       </header>
       <main>
@@ -60,6 +72,7 @@ export function AppLayout() {
           <p>&copy; {new Date().getFullYear()} Pagu Admin</p>
         </div>
       </footer>
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
     </>
   );
 }
