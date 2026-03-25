@@ -13,6 +13,7 @@ import { LayoutEditorPage } from './pages/LayoutEditorPage';
 import { IngredientPage } from './pages/IngredientPage';
 import { IngredientsPage } from './pages/IngredientsPage';
 import { RecipesPage } from './pages/RecipesPage';
+import { ChartExamplesPage } from './pages/ChartExamplesPage';
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/ingredient/:id" element={<IngredientPage />} />
+            <Route path="/chart-examples" element={<ChartExamplesPage />} />
           </Route>
           {/* Full-page views — no AppLayout nav */}
           <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />
