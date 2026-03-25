@@ -21,6 +21,18 @@ if [ ! -d "$REPO_PATH/.git" ]; then
   cd /app
 else
   echo "pagu-db already exists at $REPO_PATH"
+
+  # Seed if ingredients directory is empty (e.g., first deploy had no seed data)
+  INGREDIENT_COUNT=$(ls "$REPO_PATH/ingredients/"*.json 2>/dev/null | wc -l)
+  if [ "$INGREDIENT_COUNT" -eq 0 ] && [ -d "/app/seed-data/ingredients" ]; then
+    echo "Ingredients directory empty, seeding..."
+    mkdir -p "$REPO_PATH/ingredients"
+    cp /app/seed-data/ingredients/*.json "$REPO_PATH/ingredients/"
+    cd "$REPO_PATH"
+    git add -A
+    git commit -m "Seed ingredient data" || true
+    cd /app
+  fi
 fi
 
 # Configure git for agent commits
