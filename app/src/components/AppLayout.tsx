@@ -36,6 +36,11 @@ export function AppLayout() {
               </Link>
             </li>
             <li>
+              <Link to="/recipes" className="transition hover:text-indigo-600">
+                Recipes
+              </Link>
+            </li>
+            <li>
               <Link to="/ingredients" className="transition hover:text-indigo-600">
                 Ingredients
               </Link>

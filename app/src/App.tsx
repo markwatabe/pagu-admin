@@ -12,6 +12,7 @@ import { MenuPreviewPage } from './pages/MenuPreviewPage';
 import { LayoutEditorPage } from './pages/LayoutEditorPage';
 import { IngredientPage } from './pages/IngredientPage';
 import { IngredientsPage } from './pages/IngredientsPage';
+import { RecipesPage } from './pages/RecipesPage';
 
 export function App() {
   return (
@@ -27,6 +28,7 @@ export function App() {
             <Route path="/menu-builder" element={<MenuBuilderPage />} />
             <Route path="/menu-ingredients" element={<MenuIngredientsPage />} />
             <Route path="/menu-render" element={<MenuRenderPage />} />
+            <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/ingredient/:id" element={<IngredientPage />} />
           </Route>
