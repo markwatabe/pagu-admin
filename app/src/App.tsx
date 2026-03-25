@@ -14,6 +14,7 @@ import { IngredientPage } from './pages/IngredientPage';
 import { IngredientsPage } from './pages/IngredientsPage';
 import { RecipesPage } from './pages/RecipesPage';
 import { ChartExamplesPage } from './pages/ChartExamplesPage';
+import { UploadImagePage } from './pages/UploadImagePage';
 
 export function App() {
   return (
@@ -33,6 +34,7 @@ export function App() {
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/ingredient/:id" element={<IngredientPage />} />
             <Route path="/chart-examples" element={<ChartExamplesPage />} />
+            <Route path="/upload-image" element={<UploadImagePage />} />
           </Route>
           {/* Full-page views — no AppLayout nav */}
           <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />
