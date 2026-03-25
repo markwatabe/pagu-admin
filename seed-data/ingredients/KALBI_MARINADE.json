@@ -1,0 +1,33 @@
+{
+    "id": "KALBI_MARINADE",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "marinade",
+    "name": "Korean Short Rib Marinade",
+    "ingredients": [
+        [200,   "gram", "SAKE"],
+        [200,   "gram", "SOY_SAUCE"],
+        [100,   "gram", "MIRIN"],
+        [100,   "gram", "ORGANIC_CANE_SUGAR"],
+        [100,   "gram", "RICE_VINEGAR"],
+        [20,    "gram", "SCALLION"],
+        [10,    "gram", "SESAME_OIL"],
+        [40,    "gram", "GARLIC_MINCED"],
+        [20,    "gram", "GINGER_PEELED_MINCED"],
+        [1,     "whole", "APPLE_CORED_PEELED"]
+    ],
+    "instructions": [
+        "Throw everything in a blender and mix well"
+    ],
+    "directions": [
+        "Marinate meat 24 hours",
+        "Marinade can be used twice"
+    ],
+    "equipment": ["blender"],
+    "instance_state": {
+        "times_used": {
+            "start": 0,
+            "max": 2
+        }
+    }
+
+}

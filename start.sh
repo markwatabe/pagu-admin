@@ -9,8 +9,8 @@ if [ ! -d "$REPO_PATH/.git" ]; then
   mkdir -p "$REPO_PATH/ingredients"
 
   # Seed with bundled ingredient data if available
-  if [ -d "/app/REPO/ingredients" ]; then
-    cp /app/REPO/ingredients/*.json "$REPO_PATH/ingredients/" 2>/dev/null || true
+  if [ -d "/app/seed-data/ingredients" ]; then
+    cp /app/seed-data/ingredients/*.json "$REPO_PATH/ingredients/" 2>/dev/null || true
     echo "Seeded ingredients from bundled data"
   fi
 
