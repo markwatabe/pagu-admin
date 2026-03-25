@@ -50,6 +50,11 @@ export function AppLayout() {
                 Layout Editor
               </Link>
             </li>
+            <li>
+              <Link to="/upload-image" className="transition hover:text-indigo-600">
+                Upload Image
+              </Link>
+            </li>
           </ul>
           <div className="flex items-center gap-3">
             <button
