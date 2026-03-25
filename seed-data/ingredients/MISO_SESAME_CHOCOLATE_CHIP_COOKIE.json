@@ -1,0 +1,35 @@
+{
+    "id": "MISO_SESAME_CHOCOLATE_CHIP_COOKIE",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "cookie",
+    "name": "Miso Sesame Chocolate Chip Cookie",
+    "yields": [65, "cookie"],
+    "ingredients": [
+        [460,   "gram", "AP_FLOUR"],
+        [1.25,  "teaspoon", "BAKING_SODA"],
+        [1.5,   "teaspoon", "BAKING_POWDER"],
+        [0.25,  "teaspoon", "SEA_SALT"],
+        [282,   "gram", "BUTTER"],
+        [396,   "gram", "ORGANIC_CANE_SUGAR"],
+        [100,   "gram", "EGGS"],
+        [10,    "gram", "SHIRO_MISO"],
+        [50,    "gram", "DARK_CHOCOLATE_CHIPS"],
+        [10,    "gram", "BLACK_AND_WHITE_SESAME_SEEDS"]
+    ],
+    "instructions": [
+        "In large bowl, mix/whisk all dry ingredients \"A\" until well incorporated. Set aside.",
+        "In mixing bowl with paddle, on medium speed whip butter until soft and aerated.",
+        "Add sugar until well incorporated, scraping down sides of bowl.",
+        "Add eggs, one at a time and mix on low-medium speed until well incorporated, scraping down sides of bowl.",
+        "Add miso and whip on low-medium speed until well incorporated, no chunks.",
+        "Add dry ingredients, and mix on low speed until just incorporated. DO NOT OVERMIX!",
+        "Refrigerate and let rest at least 20 min or overnight.",
+        "Preheat oven to 350f, high fan.",
+        "To assemble, scoop and portion dough 18g, and add chocolate disc or chocolate chips in between so chocolate is in middle.",
+        "Roll exterior of cookie in toasted sesame seeds",
+        "Flatten cookies to 1/2\" height. They should be at 60f before baking. Not too warm, not too cold. Sprinkle a pinch of sea salt on top of each cookie.",
+        "Bake 8 min until golden. Remember to rotate the tray half-way through baking time. Outside should be crisp, inside soft. Cool on rack.",
+        "Serve warm. If not serving immediately, hold in fish tub with parchment paper and reheat at 350f for 2 minutes to serve warm."
+    ],
+    "equipment": ["mixing bowl", "paddle attachment", "oven", "sheet tray", "cooling rack"]
+}
