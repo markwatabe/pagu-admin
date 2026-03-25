@@ -3,7 +3,7 @@ import { promisify } from 'node:util';
 
 const execFile = promisify(execFileCb);
 
-export async function gitCommitAndPush(
+export async function gitCommit(
   repoPath: string,
   filePath: string,
   message: string,
@@ -11,5 +11,4 @@ export async function gitCommitAndPush(
   const opts = { cwd: repoPath };
   await execFile('git', ['add', filePath], opts);
   await execFile('git', ['commit', '-m', message], opts);
-  await execFile('git', ['push', 'origin', 'main'], opts);
 }

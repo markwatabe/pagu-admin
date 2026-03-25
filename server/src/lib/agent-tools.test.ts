@@ -36,7 +36,7 @@ describe('executeToolCall', () => {
 
   it('write_ingredient writes file and commits', async () => {
     vi.mocked(fs.writeFile).mockResolvedValue();
-    vi.mocked(git.gitCommitAndPush).mockResolvedValue();
+    vi.mocked(git.gitCommit).mockResolvedValue();
 
     const result = await executeToolCall(REPO, 'write_ingredient', {
       id: 'NEW',
@@ -50,7 +50,7 @@ describe('executeToolCall', () => {
       '{"id":"NEW","production_type":"purchasable"}',
       'utf-8',
     );
-    expect(git.gitCommitAndPush).toHaveBeenCalledWith(
+    expect(git.gitCommit).toHaveBeenCalledWith(
       '/data/pagu-db',
       'ingredients/NEW.json',
       'Add new ingredient',

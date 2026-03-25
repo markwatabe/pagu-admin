@@ -3,13 +3,24 @@ set -e
 
 REPO_PATH="${REPO_PATH:-/data/pagu-db}"
 
-# Clone pagu-db on first deploy (Render Disk persists across deploys)
+# Initialize pagu-db on first deploy (Render Disk persists across deploys)
 if [ ! -d "$REPO_PATH/.git" ]; then
-  echo "Cloning pagu-db into $REPO_PATH..."
-  git clone https://github.com/markwatabe/pagu-db.git "$REPO_PATH"
+  echo "Initializing pagu-db at $REPO_PATH..."
+  mkdir -p "$REPO_PATH/ingredients"
+
+  # Seed with bundled ingredient data if available
+  if [ -d "/app/REPO/ingredients" ]; then
+    cp /app/REPO/ingredients/*.json "$REPO_PATH/ingredients/" 2>/dev/null || true
+    echo "Seeded ingredients from bundled data"
+  fi
+
+  cd "$REPO_PATH"
+  git init
+  git add -A
+  git commit -m "Initial commit: seed ingredient data" || true
+  cd /app
 else
-  echo "pagu-db already exists at $REPO_PATH, pulling latest..."
-  cd "$REPO_PATH" && git pull origin main && cd /app
+  echo "pagu-db already exists at $REPO_PATH"
 fi
 
 # Configure git for agent commits

@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
-import { gitCommitAndPush } from './git.js';
+import { gitCommit } from './git.js';
 
 export const AGENT_TOOLS: Tool[] = [
   {
@@ -81,8 +81,8 @@ export async function executeToolCall(
         const safeId = sanitizeId(input.id);
         const filePath = path.join(ingredientsDir, `${safeId}.json`);
         await writeFile(filePath, input.content, 'utf-8');
-        await gitCommitAndPush(repoPath, `ingredients/${safeId}.json`, input.message);
-        return `Successfully wrote ingredients/${safeId}.json and pushed to remote`;
+        await gitCommit(repoPath, `ingredients/${safeId}.json`, input.message);
+        return `Successfully wrote ingredients/${safeId}.json and committed`;
       } catch (err) {
         return `Error writing ingredient ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
       }
