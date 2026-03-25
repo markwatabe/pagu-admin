@@ -11,7 +11,7 @@ services:
     dockerContext: .
     disk:
       name: pagu-data
-      mountPath: /data
+      mountPath: /var/data
       sizeGB: 1
     envVars:
       - key: VITE_INSTANT_APP_ID
@@ -21,7 +21,7 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: REPO_PATH
-        value: /data/pagu-db
+        value: /var/data/pagu-db
       - key: PORT
         value: "10000"
       - key: NODE_ENV
