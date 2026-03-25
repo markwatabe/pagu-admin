@@ -19,7 +19,9 @@ RUN pnpm install --frozen-lockfile
 # Copy source
 COPY . .
 
-# Build frontend
+# Build frontend (Vite embeds VITE_* vars at build time)
+ARG VITE_INSTANT_APP_ID
+ENV VITE_INSTANT_APP_ID=$VITE_INSTANT_APP_ID
 RUN pnpm --filter app build
 
 # Start script: clone pagu-db if not present, then start server
