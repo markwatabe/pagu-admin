@@ -2,6 +2,8 @@ import { useParams, Link } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
 import { useEffect, useState } from 'react';
 
+const BATCH_SIZES = [0.5, 1, 2, 3, 4] as const;
+
 interface ResolvedIngredient {
   amount: number;
   unit: string;
@@ -25,6 +27,7 @@ export function IngredientPage() {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<IngredientDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [batchSize, setBatchSize] = useState(1);
 
   useEffect(() => {
     fetch(`/api/ingredients/${id}`)
@@ -53,7 +56,7 @@ export function IngredientPage() {
         </h1>
         {recipe.length > 0 && (
           <p className="mt-1 text-gray-500">
-            {recipe.length} ingredients &middot; {totalWeight}g total
+            {recipe.length} ingredients &middot; {parseFloat((totalWeight * batchSize).toFixed(2))}g total
           </p>
         )}
       </div>
@@ -64,36 +67,47 @@ export function IngredientPage() {
         </p>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-6 py-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Make Batch</span>
+            <div className="flex gap-1">
+              {BATCH_SIZES.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setBatchSize(size)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    batchSize === size
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {size}x
+                </button>
+              ))}
+            </div>
+          </div>
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
               <tr>
                 <th className="px-6 py-3">Ingredient</th>
-                <th className="px-6 py-3 text-right">Amount</th>
-                <th className="px-6 py-3 text-right">%</th>
+                <th className="px-6 py-3 text-right">Batch Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {recipe.map((r) => {
-                const pct = totalWeight > 0 ? (r.amount / totalWeight) * 100 : 0;
-                return (
-                  <tr key={r.ingredientId} className="transition hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium text-gray-900">
-                      <Link
-                        to={`/ingredient/${r.ingredientId}`}
-                        className="hover:text-indigo-600"
-                      >
-                        {r.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-3 text-right text-gray-600">
-                      {r.amount} {r.unit}
-                    </td>
-                    <td className="px-6 py-3 text-right text-gray-400">
-                      {pct.toFixed(1)}%
-                    </td>
-                  </tr>
-                );
-              })}
+              {recipe.map((r) => (
+                <tr key={r.ingredientId} className="transition hover:bg-gray-50">
+                  <td className="px-6 py-3 font-medium text-gray-900">
+                    <Link
+                      to={`/ingredient/${r.ingredientId}`}
+                      className="hover:text-indigo-600"
+                    >
+                      {r.name}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-3 text-right text-gray-600">
+                    {parseFloat((r.amount * batchSize).toFixed(2))} {r.unit}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
