@@ -140,6 +140,13 @@ export function PrintLayoutEditor({ initialState, onChange, toolbar, title }: Pr
           + Add Node
         </button>
 
+        <button
+          onClick={() => addNode({ nodeType: 'image', width: 200, height: 200, template: '' })}
+          className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+        >
+          + Add Image
+        </button>
+
         {toolbar}
       </div>
 
@@ -174,9 +181,11 @@ export function PrintLayoutEditor({ initialState, onChange, toolbar, title }: Pr
                   <div className="pl-5">
                     {page.nodes.map(node => {
                       const isSelected = isActivePage && node.id === selectedNodeId
-                      const label = node.query
-                        ? `[${node.query}]`
-                        : node.template.replace(/<[^>]*>/g, '').slice(0, 24) || '(empty)'
+                      const label = node.nodeType === 'image'
+                        ? '🖼 Image'
+                        : node.query
+                          ? `[${node.query}]`
+                          : node.template.replace(/<[^>]*>/g, '').slice(0, 24) || '(empty)'
                       return (
                         <button
                           key={node.id}

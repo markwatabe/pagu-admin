@@ -10,6 +10,10 @@ const _schema = i.schema({
     $files: i.entity({
       path: i.string().unique().indexed(),
       url: i.string(),
+      name: i.string().optional(),
+      created_at: i.number().optional(),
+      width: i.number().optional(),
+      height: i.number().optional(),
     }),
     $streams: i.entity({
       abortReason: i.string().optional(),
@@ -20,6 +24,7 @@ const _schema = i.schema({
     $users: i.entity({
       email: i.string().unique().indexed().optional(),
       imageURL: i.string().optional(),
+      avatarURL: i.string().optional(),
       is_admin: i.boolean().optional(),
       created_at: i.number().optional(),
       type: i.string().optional(),
@@ -38,6 +43,14 @@ const _schema = i.schema({
       price: i.number().optional(),
       section: i.string().optional(),
     }),
+    orgs: i.entity({
+      name: i.string(),
+      created_at: i.number().optional(),
+    }),
+    orgRoles: i.entity({
+      role: i.string(), // 'admin' | 'editor' | 'operator'
+      created_at: i.number().optional(),
+    }),
     reviews: i.entity({
       author: i.string().optional(),
       body: i.string().optional(),
@@ -48,6 +61,18 @@ const _schema = i.schema({
     }),
   },
   links: {
+    $filesUploadedBy: {
+      forward: {
+        on: "$files",
+        has: "one",
+        label: "uploadedBy",
+      },
+      reverse: {
+        on: "$users",
+        has: "many",
+        label: "$files",
+      },
+    },
     $streams$files: {
       forward: {
         on: "$streams",
@@ -72,6 +97,42 @@ const _schema = i.schema({
         on: "$users",
         has: "many",
         label: "linkedGuestUsers",
+      },
+    },
+    orgRolesOrg: {
+      forward: {
+        on: "orgRoles",
+        has: "one",
+        label: "org",
+      },
+      reverse: {
+        on: "orgs",
+        has: "many",
+        label: "roles",
+      },
+    },
+    orgRolesUser: {
+      forward: {
+        on: "orgRoles",
+        has: "one",
+        label: "user",
+      },
+      reverse: {
+        on: "$users",
+        has: "many",
+        label: "orgRoles",
+      },
+    },
+    orgsLogo: {
+      forward: {
+        on: "orgs",
+        has: "one",
+        label: "logo",
+      },
+      reverse: {
+        on: "$files",
+        has: "many",
+        label: "logoForOrgs",
       },
     },
     measuredIngredientsIngredient: {

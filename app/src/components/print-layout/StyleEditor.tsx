@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { db } from '../../lib/db'
 import { NAMED_QUERIES } from './queries'
 import {
   FONT_SIZE_OPTIONS, FONT_WEIGHT_OPTIONS, TEXT_ALIGN_OPTIONS, TEXT_COLOR_OPTIONS,
@@ -238,11 +239,139 @@ function DesignTokensEditor({
   )
 }
 
+const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif'])
+
+function isImageFile(path: string | undefined): boolean {
+  if (!path) return false
+  const ext = path.split('.').pop()?.toLowerCase() ?? ''
+  return IMAGE_EXTS.has(ext)
+}
+
+function ImageNodeEditor({ node, onUpdate, onRemove }: {
+  node: LayoutNode
+  onUpdate: (patch: Partial<LayoutNode>) => void
+  onRemove: () => void
+}) {
+  const { data } = db.useQuery({ $files: {} })
+  const [search, setSearch] = useState('')
+
+  const imageFiles = (data?.$files ?? []).filter(f => isImageFile(f.path))
+  const filtered = search
+    ? imageFiles.filter(f =>
+        (f.name ?? f.path ?? '').toLowerCase().includes(search.toLowerCase())
+      )
+    : imageFiles
+
+  return (
+    <div className="flex flex-col overflow-y-auto text-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+          Image Node
+        </span>
+        <button
+          onClick={onRemove}
+          className="text-xs text-red-500 hover:text-red-700"
+          aria-label="Remove node"
+        >
+          Remove
+        </button>
+      </div>
+
+      {/* Current image preview */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Source</p>
+        {node.src ? (
+          <div className="space-y-2">
+            <img
+              src={node.src}
+              alt=""
+              className="max-h-32 w-full rounded border border-gray-200 object-contain bg-gray-50"
+            />
+            <button
+              onClick={() => onUpdate({ src: undefined })}
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              Clear image
+            </button>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 italic">No image selected</p>
+        )}
+      </section>
+
+      {/* File picker */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select from Files</p>
+        <input
+          type="text"
+          placeholder="Search images..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full rounded border border-gray-200 px-2 py-1 text-xs placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+        <div className="max-h-48 overflow-y-auto space-y-1">
+          {filtered.length === 0 && (
+            <p className="text-xs text-gray-400 italic">No images found</p>
+          )}
+          {filtered.map(f => {
+            const isSelected = node.src === f.url
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => onUpdate({ src: f.url })}
+                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition ${
+                  isSelected
+                    ? 'bg-indigo-50 ring-1 ring-indigo-300'
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <img
+                  src={f.url}
+                  alt=""
+                  className="h-8 w-8 shrink-0 rounded border border-gray-200 object-contain bg-gray-50"
+                />
+                <span className="truncate text-xs text-gray-700">
+                  {f.name || f.path?.split('/').pop() || 'Untitled'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Position & size */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Position &amp; Size</p>
+        <div className="grid grid-cols-2 gap-2">
+          {([ ['x', 'x', node.x], ['y', 'y', node.y], ['w', 'width', node.width], ['h', 'height', node.height] ] as [string, keyof typeof node, number][]).map(([label, key, value]) => (
+            <label key={label} className="flex flex-col gap-0.5">
+              <span className="text-xs text-gray-400 uppercase">{label}</span>
+              <input
+                aria-label={label}
+                type="number"
+                className="rounded border border-gray-200 px-1.5 py-0.5 text-xs"
+                value={value}
+                onChange={e => onUpdate({ [key]: Number(e.target.value) })}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export function StyleEditor({
   node, dataModel, onUpdate, onRemove,
   designTokens, onTokenUpdate, onTokenRemove, onTokenAdd, onTokensSave,
   tokensDirty, tokensSaving,
 }: StyleEditorProps) {
+  if (node?.nodeType === 'image') {
+    return <ImageNodeEditor node={node} onUpdate={onUpdate} onRemove={onRemove} />
+  }
+
   if (!node) {
     if (designTokens && onTokenUpdate && onTokenRemove && onTokenAdd && onTokensSave) {
       return (

@@ -1,21 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { db } from '../lib/db';
 import { ChatPanel } from './ChatPanel';
 import { useAppBadge } from '../hooks/useAppBadge';
 
-const navLinks = [
-  { to: '/users', label: 'Users' },
-  { to: '/dishes', label: 'Dishes' },
-  { to: '/menu', label: 'Menus' },
-  { to: '/reviews', label: 'Reviews' },
-  { to: '/recipes', label: 'Recipes' },
-  { to: '/ingredients', label: 'Ingredients' },
-  { to: '/upload-image', label: 'Upload Image' },
+const NAV_LINKS = [
+  { path: 'users', label: 'Users' },
+  { path: 'dishes', label: 'Dishes' },
+  { path: 'menu', label: 'Menus' },
+  { path: 'reviews', label: 'Reviews' },
+  { path: 'recipes', label: 'Recipes' },
+  { path: 'ingredients', label: 'Ingredients' },
+  { path: 'files', label: 'Files' },
 ];
 
 export function AppLayout() {
   useAppBadge();
+  const { orgId } = useParams();
+  const { user } = db.useAuth();
+  const { data: userData } = db.useQuery(
+    user ? { $users: { $: { where: { id: user.id } } } } : null,
+  );
+  const profile = userData?.$users?.[0];
+  const avatarSrc = profile?.avatarURL || profile?.imageURL;
+
+  const orgBase = `/${orgId}`;
+  const navLinks = NAV_LINKS.map(l => ({ to: `${orgBase}/${l.path}`, label: l.label }));
+
   const [chatOpen, setChatOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -99,15 +110,37 @@ export function AppLayout() {
               <button
                 type="button"
                 onClick={() => setAvatarMenuOpen((o) => !o)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-200"
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-200"
                 aria-label="User menu"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                )}
               </button>
               {avatarMenuOpen && (
                 <div className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-100 bg-white py-1 shadow-lg">
+                  <Link
+                    to={`${orgBase}/account`}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    Account
+                  </Link>
+                  <Link
+                    to={`${orgBase}/org`}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1H8a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+                    </svg>
+                    Organizations
+                  </Link>
                   <button
                     type="button"
                     onClick={handleSignOut}

@@ -35,7 +35,24 @@ export function UsersPage() {
           <tbody className="divide-y divide-gray-50">
             {users.map((user) => (
               <tr key={user.id} className="transition hover:bg-gray-50">
-                <td className="px-6 py-4 font-medium text-gray-900">{user.email}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100">
+                      {(user.avatarURL || user.imageURL) ? (
+                        <img
+                          src={user.avatarURL || user.imageURL}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs font-semibold text-indigo-600">
+                          {(user.email?.[0] ?? '?').toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-gray-900">{user.email}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4">
                   <span className={[
                     'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',

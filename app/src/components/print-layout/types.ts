@@ -1,7 +1,10 @@
 export const MM_TO_PX = 96 / 25.4
 
+export type NodeType = 'generic' | 'image'
+
 export interface LayoutNode {
   id: string
+  nodeType?: NodeType // defaults to 'generic' if omitted
   x: number        // logical px, pre-scale
   y: number
   width: number
@@ -9,6 +12,7 @@ export interface LayoutNode {
   style: Record<string, string>  // CSS properties — values can use var(--token)
   template: string // Liquid template source
   query: string | null // named query key — template renders once per item when set
+  src?: string // image URL — used when nodeType is 'image'
 }
 
 export type Subdivision = 'full' | 'cols2' | 'rows2' | 'grid4'

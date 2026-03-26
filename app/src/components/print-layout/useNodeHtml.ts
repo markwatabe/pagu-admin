@@ -18,6 +18,16 @@ export function useNodeHtml(
   const [renderError, setRenderError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Image nodes render as a simple <img> tag — no Liquid needed
+    if (node.nodeType === 'image') {
+      const imgHtml = node.src
+        ? `<img src="${node.src}" style="width:100%;height:100%;object-fit:contain;" />`
+        : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9ca3af;font-size:12px;">No image selected</div>'
+      setHtml(imgHtml)
+      setRenderError(null)
+      return
+    }
+
     let cancelled = false
     const items = node.query ? dataModel[node.query] : null
 
@@ -47,7 +57,7 @@ export function useNodeHtml(
     return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // liquid is intentionally excluded — see JSDoc above
-  }, [node.template, node.query, dataModel])
+  }, [node.template, node.query, node.nodeType, node.src, dataModel])
 
   return { html, renderError }
 }
