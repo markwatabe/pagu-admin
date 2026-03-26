@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../lib/db';
 import { ChatPanel } from './ChatPanel';
+import { useAppBadge } from '../hooks/useAppBadge';
 
 const navLinks = [
   { to: '/users', label: 'Users' },
@@ -14,6 +15,7 @@ const navLinks = [
 ];
 
 export function AppLayout() {
+  useAppBadge();
   const [chatOpen, setChatOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
