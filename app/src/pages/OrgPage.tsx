@@ -201,6 +201,55 @@ function MembersList({ orgId }: { orgId: string }) {
   );
 }
 
+function UsersTable() {
+  const { isLoading, error, data } = db.useQuery({ '$users': {} });
+
+  if (isLoading) return <p className="text-gray-500">Loading users...</p>;
+  if (error) return <p className="text-red-600">Error: {error.message}</p>;
+
+  const users = [...(data?.['$users'] ?? [])].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <table className="w-full text-sm">
+        <thead className="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <tr>
+            <th className="px-6 py-4">Email</th>
+            <th className="px-6 py-4">Joined</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {users.map((user) => (
+            <tr key={user.id} className="transition hover:bg-gray-50">
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-100">
+                    {(user.avatarURL || user.imageURL) ? (
+                      <img src={user.avatarURL || user.imageURL} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-semibold text-indigo-600">
+                        {(user.email?.[0] ?? '?').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-medium text-gray-900">{user.email}</span>
+                </div>
+              </td>
+              <td className="px-6 py-4 text-gray-400">
+                {new Date(user.created_at).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric',
+                })}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function OrgCard({ org }: { org: Record<string, unknown> & { id: string; name: string } }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -247,6 +296,11 @@ export function OrgPage() {
       )}
 
       {org && <OrgCard org={org} />}
+
+      <div className="mt-12">
+        <h2 className="mb-4 text-xl font-bold tracking-tight text-gray-900">All Users</h2>
+        <UsersTable />
+      </div>
     </section>
   );
 }

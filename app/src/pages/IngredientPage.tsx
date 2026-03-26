@@ -17,6 +17,8 @@ interface IngredientDetail {
   production_type: string;
   ingredient_type?: string;
   type?: string;
+  allergen?: boolean;
+  sub_ingredients?: string[];
   ingredients?: ResolvedIngredient[];
   instructions?: string[];
   directions?: string[];
@@ -24,7 +26,7 @@ interface IngredientDetail {
 }
 
 export function IngredientPage() {
-  const { id } = useParams<{ id: string }>();
+  const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const [data, setData] = useState<IngredientDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [batchSize, setBatchSize] = useState(1);
@@ -48,12 +50,19 @@ export function IngredientPage() {
   return (
     <section className="mx-auto max-w-3xl px-6 py-16">
       <div className="mb-8">
-        <Link to="/ingredients" className="text-sm text-indigo-600 hover:text-indigo-800">
+        <Link to={`/${orgId}/ingredients`} className="text-sm text-indigo-600 hover:text-indigo-800">
           &larr; All Ingredients
         </Link>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
-          {data.name}
-        </h1>
+        <div className="mt-2 flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            {data.name}
+          </h1>
+          {data.allergen && (
+            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700">
+              Common Allergen
+            </span>
+          )}
+        </div>
         {recipe.length > 0 && (
           <p className="mt-1 text-gray-500">
             {recipe.length} ingredients &middot; {parseFloat((totalWeight * batchSize).toFixed(2))}g total
@@ -61,11 +70,31 @@ export function IngredientPage() {
         )}
       </div>
 
-      {recipe.length === 0 ? (
+      {recipe.length === 0 && data.sub_ingredients && data.sub_ingredients.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-gray-700">Sub-ingredients</h2>
+          <ul className="space-y-1">
+            {data.sub_ingredients.map((s) => (
+              <li key={s}>
+                <Link
+                  to={`/${orgId}/ingredient/${s}`}
+                  className="text-sm text-indigo-600 hover:text-indigo-800"
+                >
+                  {s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {recipe.length === 0 && (!data.sub_ingredients || data.sub_ingredients.length === 0) && (
         <p className="text-sm italic text-gray-400">
           This ingredient has no recipe — it is a base ingredient.
         </p>
-      ) : (
+      )}
+
+      {recipe.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-6 py-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Make Batch</span>
@@ -97,7 +126,7 @@ export function IngredientPage() {
                 <tr key={r.ingredientId} className="transition hover:bg-gray-50">
                   <td className="px-6 py-3 font-medium text-gray-900">
                     <Link
-                      to={`/ingredient/${r.ingredientId}`}
+                      to={`/${orgId}/ingredient/${r.ingredientId}`}
                       className="hover:text-indigo-600"
                     >
                       {r.name}

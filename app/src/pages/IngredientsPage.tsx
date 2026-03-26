@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +12,7 @@ interface IngredientSummary {
 }
 
 export function IngredientsPage() {
+  const { orgId } = useParams();
   const [ingredients, setIngredients] = useState<IngredientSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ export function IngredientsPage() {
             {withRecipe.map((ing) => (
               <Link
                 key={ing.id}
-                to={`/ingredient/${ing.id}`}
+                to={`/${orgId}/ingredient/${ing.id}`}
                 className="flex items-center justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
               >
                 <span className="font-semibold text-gray-900">{ing.name}</span>
@@ -65,7 +66,7 @@ export function IngredientsPage() {
             {withoutRecipe.map((ing) => (
               <li key={ing.id}>
                 <Link
-                  to={`/ingredient/${ing.id}`}
+                  to={`/${orgId}/ingredient/${ing.id}`}
                   className="block px-6 py-3 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
                 >
                   {ing.name}

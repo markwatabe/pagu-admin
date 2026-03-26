@@ -19,7 +19,7 @@ export function OrgRedirect() {
     const orgRaw = role.org;
     const org = Array.isArray(orgRaw) ? orgRaw[0] : orgRaw;
     if (org && typeof org === 'object' && 'id' in org) {
-      return <Navigate to={`/${(org as { id: string }).id}/users`} replace />;
+      return <Navigate to={`/${(org as { id: string }).id}/org`} replace />;
     }
   }
 

@@ -3,7 +3,6 @@ import { AppLayout } from './components/AppLayout';
 import { ProtectedLayout } from './components/ProtectedLayout';
 import { OrgRedirect } from './components/OrgRedirect';
 import { LoginPage } from './pages/LoginPage';
-import { UsersPage } from './pages/UsersPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { MenuIngredientsPage } from './pages/MenuIngredientsPage';
 import { MenuRenderPage } from './pages/MenuRenderPage';
@@ -33,7 +32,6 @@ export function App() {
           <Route path="/:orgId">
             {/* Pages with nav/footer */}
             <Route element={<AppLayout />}>
-              <Route path="users" element={<UsersPage />} />
               <Route path="reviews" element={<ReviewsPage />} />
               <Route path="menu-ingredients" element={<MenuIngredientsPage />} />
               <Route path="menu-render" element={<MenuRenderPage />} />

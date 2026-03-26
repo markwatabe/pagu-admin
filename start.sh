@@ -8,9 +8,9 @@ if [ ! -d "$REPO_PATH/.git" ]; then
   echo "Initializing pagu-db at $REPO_PATH..."
   mkdir -p "$REPO_PATH/ingredients"
 
-  # Seed with bundled ingredient data if available
-  if [ -d "/app/seed-data/ingredients" ]; then
-    cp /app/seed-data/ingredients/*.json "$REPO_PATH/ingredients/" 2>/dev/null || true
+  # Seed with bundled ingredient data from REPO if available
+  if [ -d "/app/REPO/ingredients" ]; then
+    cp /app/REPO/ingredients/*.json "$REPO_PATH/ingredients/" 2>/dev/null || true
     echo "Seeded ingredients from bundled data"
   fi
 
@@ -24,10 +24,10 @@ else
 
   # Seed if ingredients directory is empty (e.g., first deploy had no seed data)
   INGREDIENT_COUNT=$(ls "$REPO_PATH/ingredients/"*.json 2>/dev/null | wc -l)
-  if [ "$INGREDIENT_COUNT" -eq 0 ] && [ -d "/app/seed-data/ingredients" ]; then
+  if [ "$INGREDIENT_COUNT" -eq 0 ] && [ -d "/app/REPO/ingredients" ]; then
     echo "Ingredients directory empty, seeding..."
     mkdir -p "$REPO_PATH/ingredients"
-    cp /app/seed-data/ingredients/*.json "$REPO_PATH/ingredients/"
+    cp /app/REPO/ingredients/*.json "$REPO_PATH/ingredients/"
     cd "$REPO_PATH"
     git add -A
     git commit -m "Seed ingredient data" || true

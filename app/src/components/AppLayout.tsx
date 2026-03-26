@@ -5,7 +5,7 @@ import { ChatPanel } from './ChatPanel';
 import { useAppBadge } from '../hooks/useAppBadge';
 
 const NAV_LINKS = [
-  { path: 'users', label: 'Users' },
+  { path: 'org', label: 'Organization' },
   { path: 'dishes', label: 'Dishes' },
   { path: 'menu', label: 'Menus' },
   { path: 'reviews', label: 'Reviews' },
@@ -23,6 +23,14 @@ export function AppLayout() {
   );
   const profile = userData?.$users?.[0];
   const avatarSrc = profile?.avatarURL || profile?.imageURL;
+
+  const { data: orgData } = db.useQuery(
+    orgId ? { orgs: { $: { where: { id: orgId } }, logo: {} } } : null,
+  );
+  const org = orgData?.orgs?.[0];
+  const logoRaw = org?.logo;
+  const logo = Array.isArray(logoRaw) ? logoRaw[0] : logoRaw;
+  const logoUrl = logo && typeof logo === 'object' && 'url' in logo ? (logo as { url: string }).url : null;
 
   const orgBase = `/${orgId}`;
   const navLinks = NAV_LINKS.map(l => ({ to: `${orgBase}/${l.path}`, label: l.label }));
@@ -77,8 +85,14 @@ export function AppLayout() {
             )}
           </button>
 
-          <Link to="/" className="text-xl font-bold tracking-tight text-indigo-600">
-            Pagu
+          <Link to={orgBase} className="flex items-center">
+            {logoUrl ? (
+              <img src={logoUrl} alt={org?.name ?? 'Logo'} className="h-8 object-contain" />
+            ) : (
+              <span className="text-xl font-bold tracking-tight text-indigo-600">
+                {org?.name ?? 'Pagu'}
+              </span>
+            )}
           </Link>
 
           {/* Desktop nav links */}
@@ -131,15 +145,6 @@ export function AppLayout() {
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                     Account
-                  </Link>
-                  <Link
-                    to={`${orgBase}/org`}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1H8a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
-                    </svg>
-                    Organizations
                   </Link>
                   <button
                     type="button"
