@@ -100,6 +100,8 @@ export function LayoutEditorPage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [dirty, setDirty] = useState(false);
+  const [showPrintWarning, setShowPrintWarning] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
   const latestStateRef = useRef<PrintLayoutState | null>(null);
 
   const { isLoading, error: dbError, data } = db.useQuery({ menuItems: {} });
@@ -172,6 +174,31 @@ export function LayoutEditorPage() {
     }
   }, [id, menuTemplate]);
 
+  const handleRevert = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/menus/${id}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const fresh: MenuTemplate = await r.json();
+      setMenuTemplate(fresh);
+      setDirty(false);
+      latestStateRef.current = null;
+      setEditorKey((k) => k + 1);
+    } catch {
+      // keep current state on error
+    }
+  }, [id]);
+
+  const handlePrint = useCallback(() => {
+    if (dirty) {
+      setShowPrintWarning(true);
+      return;
+    }
+    const w = window.open(`/menu-render-print/${id}`, '_blank');
+    w?.addEventListener('load', () => {
+      setTimeout(() => w.print(), 300);
+    });
+  }, [dirty, id]);
+
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
   if (dbError) return <div className="p-8 text-red-600">Error: {dbError.message}</div>;
   if (isLoading || !menuTemplate) return <Spinner />;
@@ -215,8 +242,55 @@ export function LayoutEditorPage() {
 
   return (
     <div className="flex h-screen flex-col">
+      {showPrintWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-sm font-semibold text-gray-900">Unsaved changes</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              You have unsaved changes. Save or revert before printing.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPrintWarning(false)}
+                className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await handleRevert();
+                  setShowPrintWarning(false);
+                  const w = window.open(`/menu-render-print/${id}`, '_blank');
+                  w?.addEventListener('load', () => {
+                    setTimeout(() => w.print(), 300);
+                  });
+                }}
+                className="rounded-md bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-300"
+              >
+                Revert &amp; Print
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await handleSave();
+                  setShowPrintWarning(false);
+                  const w = window.open(`/menu-render-print/${id}`, '_blank');
+                  w?.addEventListener('load', () => {
+                    setTimeout(() => w.print(), 300);
+                  });
+                }}
+                className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+              >
+                Save &amp; Print
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <PrintLayoutEditor
-        key={menuTemplate.id}
+        key={`${menuTemplate.id}-${editorKey}`}
         initialState={initialState}
         onChange={handleChange}
         title={
@@ -231,6 +305,15 @@ export function LayoutEditorPage() {
             {dirty && (
               <span className="text-xs text-amber-600">Unsaved changes</span>
             )}
+            {dirty && (
+              <button
+                type="button"
+                onClick={handleRevert}
+                className="rounded-md bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-300"
+              >
+                Revert
+              </button>
+            )}
             <button
               type="button"
               onClick={handleSave}
@@ -241,12 +324,7 @@ export function LayoutEditorPage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                const w = window.open(`/menu-render-print/${id}`, '_blank');
-                w?.addEventListener('load', () => {
-                  setTimeout(() => w.print(), 300);
-                });
-              }}
+              onClick={handlePrint}
               className="rounded-md bg-gray-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-900"
             >
               Print
