@@ -4,12 +4,12 @@ import { db } from '../lib/db';
 import { ChatPanel } from './ChatPanel';
 
 const navLinks = [
-  { to: '/menu-builder', label: 'Menu Builder' },
   { to: '/users', label: 'Users' },
+  { to: '/dishes', label: 'Dishes' },
+  { to: '/menu', label: 'Menus' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/recipes', label: 'Recipes' },
   { to: '/ingredients', label: 'Ingredients' },
-  { to: '/layout-editor', label: 'Layout Editor' },
   { to: '/upload-image', label: 'Upload Image' },
 ];
 

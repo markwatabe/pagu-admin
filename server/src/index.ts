@@ -7,6 +7,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { ingredientRoutes } from './routes/ingredients.js';
+import { dishRoutes } from './routes/dishes.js';
+import { menuRoutes } from './routes/menus.js';
+import { designTokenRoutes } from './routes/designTokens.js';
 import { chatRoutes } from './routes/chat.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +25,9 @@ if (!isProduction) {
 }
 
 app.route('/api/ingredients', ingredientRoutes(repoPath));
+app.route('/api/dishes', dishRoutes(repoPath));
+app.route('/api/menus', menuRoutes(repoPath));
+app.route('/api/design-tokens', designTokenRoutes(repoPath));
 app.route('/api/chat', chatRoutes(repoPath));
 
 // In production, serve the built frontend

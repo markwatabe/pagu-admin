@@ -29,19 +29,19 @@
   padding-bottom: 24px;
   margin-bottom: 40px;
 }
-.page-header h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; margin: 0; line-height: 1; }
-.page-header p  { margin: 8px 0 0; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #6b7280; }
+.page-header h1 { font-size: var(--menu-header-size); font-weight: 700; letter-spacing: -0.02em; margin: 0; line-height: 1; }
+.page-header p  { margin: 8px 0 0; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--menu-muted); }
 
-.menu-section + .menu-section { margin-top: 40px; padding-top: 32px; border-top: 1px solid #e5e7eb; }
-.menu-section h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #6b7280; margin: 0 0 20px; }
-.menu-section ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.menu-section + .menu-section { margin-top: var(--menu-section-gap); padding-top: 32px; border-top: 1px solid var(--menu-border); }
+.menu-section h2 { font-size: var(--menu-section-title-size); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--menu-muted); margin: 0 0 var(--menu-item-gap); }
+.menu-section ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--menu-item-gap); }
 
 .menu-item       { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
 .menu-item-left  { flex: 1; }
 .menu-item-name-row { display: flex; align-items: baseline; gap: 12px; }
-.menu-item-name  { font-size: 15px; font-weight: 600; line-height: 1.375; white-space: nowrap; }
+.menu-item-name  { font-size: var(--menu-item-size); font-weight: 600; line-height: 1.375; white-space: nowrap; }
 .leader          { flex: 1; border-bottom: 1px dotted #9ca3af; margin-bottom: 3px; }
-.menu-item-desc  { font-size: 13px; color: #6b7280; margin: 2px 0 0; line-height: 1.4; }
-.menu-item-price { font-size: 15px; font-weight: 600; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.menu-item-desc  { font-size: var(--menu-desc-size); color: var(--menu-muted); margin: 2px 0 0; line-height: 1.4; }
+.menu-item-price { font-size: var(--menu-price-size); font-weight: 600; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
-.page-footer { margin-top: 48px; border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center; font-size: 11px; color: #9ca3af; }
+.page-footer { margin-top: 48px; border-top: 1px solid var(--menu-border); padding-top: 20px; text-align: center; font-size: 11px; color: var(--menu-muted); }

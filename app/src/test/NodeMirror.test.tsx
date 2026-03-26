@@ -8,7 +8,7 @@ const liquid = new Liquid()
 
 const baseNode: LayoutNode = {
   id: 'm1', x: 10, y: 20, width: 150, height: 60,
-  classes: 'text-sm', template: '<span>Mirror</span>',
+  style: { fontSize: '14px' }, template: '<span>Mirror</span>',
   query: null,
 }
 

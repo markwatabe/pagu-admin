@@ -7,8 +7,8 @@ import type { LayoutNode } from '../components/print-layout/types'
 const liquid = new Liquid()
 
 const nodes: LayoutNode[] = [
-  { id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Node A</span>', query: null },
-  { id: 'b', x: 50, y: 50, width: 100, height: 50, classes: '', template: '<span>Node B</span>', query: null },
+  { id: 'a', x: 10, y: 10, width: 100, height: 50, style: {}, template: '<span>Node A</span>', query: null },
+  { id: 'b', x: 50, y: 50, width: 100, height: 50, style: {}, template: '<span>Node B</span>', query: null },
 ]
 
 describe('PreviewCanvas', () => {
@@ -75,7 +75,7 @@ describe('PreviewCanvas', () => {
   it('renders NodeMirror copies in non-edit cells when subdivision is cols2', async () => {
     render(
       <PreviewCanvas
-        nodes={[{ id: 'a', x: 10, y: 10, width: 100, height: 50, classes: '', template: '<span>Cell</span>', query: null }]}
+        nodes={[{ id: 'a', x: 10, y: 10, width: 100, height: 50, style: {}, template: '<span>Cell</span>', query: null }]}
         scale={1}
         pageWidth={215.9}
         pageHeight={279.4}
@@ -95,7 +95,7 @@ describe('PreviewCanvas', () => {
   it('renders 4 copies when subdivision is grid4', async () => {
     render(
       <PreviewCanvas
-        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Q</span>', query: null }]}
+        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, style: {}, template: '<span>Q</span>', query: null }]}
         scale={1}
         pageWidth={215.9}
         pageHeight={279.4}
@@ -114,7 +114,7 @@ describe('PreviewCanvas', () => {
   it('renders no mirrors when subdivision is full', async () => {
     render(
       <PreviewCanvas
-        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, classes: '', template: '<span>Solo</span>', query: null }]}
+        nodes={[{ id: 'a', x: 0, y: 0, width: 50, height: 50, style: {}, template: '<span>Solo</span>', query: null }]}
         scale={1}
         pageWidth={215.9}
         pageHeight={279.4}

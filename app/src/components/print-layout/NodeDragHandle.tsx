@@ -1,26 +1,60 @@
-import type { CSSProperties, MouseEvent } from 'react'
+import type { CSSProperties, MouseEvent, PointerEvent } from 'react'
+import { useRef, useCallback } from 'react'
 import { useDraggable } from '@dnd-kit/core'
-import { CSS } from '@dnd-kit/utilities'
 import type { Liquid } from 'liquidjs'
 import type { LayoutNode } from './types'
 import { useNodeHtml } from './useNodeHtml'
 
 export { useNodeHtml } from './useNodeHtml'
 
+const MIN_SIZE = 20
+
 interface NodeDragHandleProps {
   node: LayoutNode
+  scale: number
   liquid: Liquid
   dataModel: Record<string, unknown>
   isSelected: boolean
   onSelect: () => void
+  onUpdate: (patch: Partial<LayoutNode>) => void
 }
 
-export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }: NodeDragHandleProps) {
+export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, onSelect, onUpdate }: NodeDragHandleProps) {
   const { html, renderError } = useNodeHtml(node, liquid, dataModel)
+  const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null)
+
+  // Counter-scale handle sizes so they stay constant on screen
+  const handleSize = 8 / scale
+  const handleOffset = handleSize / 2
+  const resizeSize = 16 / scale
+  const resizeOffset = resizeSize / 2
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: node.id,
   })
+
+  const handleResizePointerDown = useCallback((e: PointerEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    resizeRef.current = { startX: e.clientX, startY: e.clientY, startW: node.width, startH: node.height }
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture(e.pointerId)
+  }, [node.width, node.height])
+
+  const handleResizePointerMove = useCallback((e: PointerEvent) => {
+    if (!resizeRef.current) return
+    const { startX, startY, startW, startH } = resizeRef.current
+    const dx = (e.clientX - startX) / scale
+    const dy = (e.clientY - startY) / scale
+    onUpdate({
+      width: Math.max(MIN_SIZE, startW + dx),
+      height: Math.max(MIN_SIZE, startH + dy),
+    })
+  }, [scale, onUpdate])
+
+  const handleResizePointerUp = useCallback(() => {
+    resizeRef.current = null
+  }, [])
 
   const style: CSSProperties = {
     position: 'absolute',
@@ -28,7 +62,9 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     top: node.y,
     width: node.width,
     height: node.height,
-    transform: CSS.Transform.toString(transform),
+    transform: transform
+      ? `translate3d(${transform.x / scale}px, ${transform.y / scale}px, 0)`
+      : undefined,
     zIndex: isDragging ? 1000 : undefined,
   }
 
@@ -47,25 +83,52 @@ export function NodeDragHandle({ node, liquid, dataModel, isSelected, onSelect }
     <div
       ref={setNodeRef}
       style={style}
-      className={`${borderClass} ${dragOverlay} overflow-hidden`}
+      className={`${borderClass} ${dragOverlay}`}
       onClick={handleClick}
       {...listeners}
       {...attributes}
     >
-      {/* Corner handles (decorative, pointer-events-none) */}
+      {/* Corner handles — counter-scaled so they stay a fixed screen size */}
       {isSelected && (
         <>
-          {['top-[-4px] left-[-4px]', 'top-[-4px] right-[-4px]', 'bottom-[-4px] left-[-4px]', 'bottom-[-4px] right-[-4px]'].map(pos => (
+          {([
+            { top: -handleOffset, left: -handleOffset },
+            { top: -handleOffset, right: -handleOffset },
+            { bottom: -handleOffset, left: -handleOffset },
+          ] as const).map((pos, i) => (
             <div
-              key={pos}
-              className={`absolute ${pos} h-2 w-2 bg-indigo-500 pointer-events-none`}
+              key={i}
+              className="absolute bg-indigo-500 pointer-events-none"
+              style={{ ...pos, width: handleSize, height: handleSize }}
             />
           ))}
+          {/* Bottom-right resize handle — larger hit area */}
+          <div
+            className="absolute cursor-nwse-resize"
+            style={{
+              bottom: -resizeOffset,
+              right: -resizeOffset,
+              width: resizeSize,
+              height: resizeSize,
+            }}
+            onPointerDown={handleResizePointerDown}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+          >
+            {/* Visual triangle indicator */}
+            <svg
+              width={resizeSize} height={resizeSize}
+              viewBox="0 0 16 16"
+              className="text-indigo-500"
+            >
+              <path d="M14 2 L14 14 L2 14 Z" fill="currentColor" />
+            </svg>
+          </div>
         </>
       )}
 
       {/* Content */}
-      <div className={`h-full w-full overflow-hidden ${node.classes}`}>
+      <div style={{ height: '100%', width: '100%', overflow: 'hidden', pointerEvents: 'none', ...node.style }}>
         {renderError ? (
           <pre role="alert" className="m-1 text-xs text-red-500 whitespace-pre-wrap break-all">
             {renderError}

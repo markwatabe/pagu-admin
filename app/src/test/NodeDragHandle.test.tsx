@@ -9,7 +9,7 @@ const liquid = new Liquid()
 
 const baseNode: LayoutNode = {
   id: 'n1', x: 40, y: 60, width: 200, height: 80,
-  classes: 'font-bold', template: '<p>{{ name }}</p>',
+  style: { fontWeight: '700' }, template: '<p>{{ name }}</p>',
   query: null,
 }
 

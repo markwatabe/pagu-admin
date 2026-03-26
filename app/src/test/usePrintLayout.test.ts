@@ -34,7 +34,7 @@ describe('usePrintLayout', () => {
       expect(node.y).toBe(20)
       expect(node.width).toBe(200)
       expect(node.height).toBe(80)
-      expect(node.classes).toBe('')
+      expect(node.style).toEqual({})
       expect(node.template).toBe('')
       expect(node.id).toBeTruthy()
     })
@@ -58,7 +58,7 @@ describe('usePrintLayout', () => {
   describe('removeNode', () => {
     it('removes a node by id', () => {
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] })
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, style: {}, template: '', query: null }] })
       )
       act(() => { result.current.removeNode('x') })
       expect(result.current.nodes).toHaveLength(0)
@@ -67,7 +67,7 @@ describe('usePrintLayout', () => {
     it('clears selectedNodeId if removed node was selected', () => {
       const { result } = renderHook(() =>
         usePrintLayout({
-          nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }],
+          nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, style: {}, template: '', query: null }],
           selectedNodeId: 'x',
         })
       )
@@ -79,13 +79,13 @@ describe('usePrintLayout', () => {
   describe('updateNode', () => {
     it('patches only specified fields', () => {
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 10, y: 20, width: 100, height: 50, classes: 'font-bold', template: 'hi', query: null }] })
+        usePrintLayout({ nodes: [{ id: 'x', x: 10, y: 20, width: 100, height: 50, style: { fontWeight: '700' }, template: 'hi', query: null }] })
       )
       act(() => { result.current.updateNode('x', { x: 99 }) })
       const node = result.current.nodes[0]
       expect(node.x).toBe(99)
       expect(node.y).toBe(20)
-      expect(node.classes).toBe('font-bold')
+      expect(node.style).toEqual({ fontWeight: '700' })
     })
   })
 
@@ -131,7 +131,7 @@ describe('usePrintLayout', () => {
     it('fires on removeNode', () => {
       const onChange = vi.fn()
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] }, onChange)
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, style: {}, template: '', query: null }] }, onChange)
       )
       act(() => { result.current.removeNode('x') })
       expect(onChange).toHaveBeenCalledOnce()
@@ -140,7 +140,7 @@ describe('usePrintLayout', () => {
     it('fires on updateNode', () => {
       const onChange = vi.fn()
       const { result } = renderHook(() =>
-        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, classes: '', template: '', query: null }] }, onChange)
+        usePrintLayout({ nodes: [{ id: 'x', x: 0, y: 0, width: 100, height: 50, style: {}, template: '', query: null }] }, onChange)
       )
       act(() => { result.current.updateNode('x', { x: 50 }) })
       expect(onChange).toHaveBeenCalledOnce()

@@ -6,7 +6,7 @@ export interface LayoutNode {
   y: number
   width: number
   height: number
-  classes: string  // Tailwind class string
+  style: Record<string, string>  // CSS properties — values can use var(--token)
   template: string // Liquid template source
   query: string | null // named query key — template renders once per item when set
 }
@@ -26,14 +26,19 @@ export function subdivisionGrid(sub: Subdivision): { cols: number; rows: number 
   return SUBDIVISION_GRID[sub]
 }
 
-export interface PrintLayoutState {
+export interface PageLayout {
   nodes: LayoutNode[]
+  subdivision: Subdivision
+}
+
+export interface PrintLayoutState {
+  pages: PageLayout[]
+  currentPageIndex: number
   selectedNodeId: string | null
   scale: number
   dataModel: Record<string, unknown>
   pageWidth: number     // mm — 215.9 for letter
   pageHeight: number    // mm — 279.4 for letter
-  subdivision: Subdivision
 }
 
 export interface UsePrintLayoutReturn extends PrintLayoutState {
@@ -44,4 +49,7 @@ export interface UsePrintLayoutReturn extends PrintLayoutState {
   setScale: (scale: number) => void
   setDataModel: (model: Record<string, unknown>) => void
   setSubdivision: (sub: Subdivision) => void
+  setCurrentPageIndex: (index: number) => void
+  addPage: () => void
+  removePage: (index: number) => void
 }

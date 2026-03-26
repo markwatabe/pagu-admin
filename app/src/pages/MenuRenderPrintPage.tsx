@@ -1,87 +1,204 @@
-import { Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { Liquid } from 'liquidjs';
 import { db } from '../lib/db';
 import { Spinner } from '../components/Spinner';
+import { MM_TO_PX, subdivisionGrid } from '../components/print-layout/types';
+import type { LayoutNode } from '../components/print-layout/types';
+import type { DesignTokens } from '../components/print-layout/useDesignTokens';
 import '../styles/menu-print.css';
 
+const SECTION_TO_KEY: Record<string, string> = {
+  'Chilled':          'chilled',
+  'Tapas':            'tapas',
+  'Baos':             'baos',
+  'Land & Sea':       'land_and_sea',
+  'Noodles & Rice':   'noodles_and_rice',
+  'Sweet':            'sweet',
+};
+
 function formatPrice(cents: number) {
-  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+}
+
+interface MenuPageJson {
+  nodes: LayoutNode[];
+  subdivision: string;
+}
+
+interface MenuTemplate {
+  id: string;
+  name: string;
+  pageWidth: number;
+  pageHeight: number;
+  pages: MenuPageJson[];
+}
+
+function PrintNode({ node, liquid, dataModel }: { node: LayoutNode; liquid: Liquid; dataModel: Record<string, unknown> }) {
+  const [html, setHtml] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    const items = node.query ? dataModel[node.query] : null;
+
+    async function render() {
+      try {
+        let result: string;
+        if (Array.isArray(items)) {
+          const parts = await Promise.all(
+            items.map((item: unknown) =>
+              liquid.parseAndRender(node.template, { ...dataModel, item })
+            )
+          );
+          result = parts.join('');
+        } else {
+          result = await liquid.parseAndRender(node.template, dataModel);
+        }
+        if (!cancelled) setHtml(result);
+      } catch {
+        // Silently skip render errors in print view
+      }
+    }
+
+    render();
+    return () => { cancelled = true; };
+  }, [node.template, node.query, dataModel, liquid]);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: node.x,
+        top: node.y,
+        width: node.width,
+        height: node.height,
+      }}
+    >
+      <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...(node.style ?? {}) }}>
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+      </div>
+    </div>
+  );
 }
 
 export function MenuRenderPrintPage() {
-  const { isLoading, error, data } = db.useQuery({ menuItems: {} });
+  const { id } = useParams<{ id: string }>();
+  const [menuTemplate, setMenuTemplate] = useState<MenuTemplate | null>(null);
+  const [designTokens, setDesignTokens] = useState<DesignTokens>({});
+  const [error, setError] = useState<string | null>(null);
+  const liquid = useMemo(() => new Liquid(), []);
 
-  if (isLoading) return <Spinner />;
-  if (error) return <div style={{ padding: 32, color: 'red' }}>Error: {error.message}</div>;
+  const { isLoading, error: dbError, data } = db.useQuery({ menuItems: {} });
+
+  useEffect(() => {
+    if (!id) return;
+    fetch(`/api/menus/${id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? 'Menu not found' : `HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(setMenuTemplate)
+      .catch((e) => setError(e.message));
+  }, [id]);
+
+  useEffect(() => {
+    fetch('/api/design-tokens')
+      .then(r => r.json())
+      .then(setDesignTokens)
+      .catch(() => setDesignTokens({}));
+  }, []);
+
+  if (error) return <div style={{ padding: 32, color: 'red' }}>Error: {error}</div>;
+  if (dbError) return <div style={{ padding: 32, color: 'red' }}>Error: {dbError.message}</div>;
+  if (isLoading || !menuTemplate) return <Spinner />;
 
   const items = [...(data?.menuItems ?? [])]
     .filter((i) => i.available)
-    .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''));
-  const sections = [...new Set(items.map((i) => i.section))];
+    .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''))
+    .map((i) => ({
+      name: i.name,
+      description: i.description,
+      section: i.section,
+      price: formatPrice(i.price ?? 0),
+      price_cents: i.price ?? 0,
+      available: i.available,
+    }));
+
+  const grouped: Record<string, typeof items> = {};
+  for (const item of items) {
+    const key = SECTION_TO_KEY[item.section] ?? (item.section ?? '').toLowerCase();
+    (grouped[key] ??= []).push(item);
+  }
+
+  const dataModel: Record<string, unknown> = {
+    restaurant: { name: 'Pagu', subtitle: 'Japanese-Spanish Tapas' },
+    all_menu_items: items,
+    ...grouped,
+  };
+
+  const pageWidthPx = menuTemplate.pageWidth * MM_TO_PX;
+  const pageHeightPx = menuTemplate.pageHeight * MM_TO_PX;
 
   return (
     <div style={{ margin: 0, fontFamily: "'Bryant Pro', sans-serif", background: 'white', color: 'black' }}>
       <style>{`
-        @page { size: A4; margin: 0; }
+        @page { size: ${menuTemplate.pageWidth}mm ${menuTemplate.pageHeight}mm; margin: 0; }
         body { margin: 0; }
         @media screen {
           body { background: #e5e7eb; }
-          .print-page { box-sizing: border-box; width: 210mm; max-width: calc(100vw - 32px); padding: 20mm 18mm; margin: 32px auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,.15); border: 1px solid #d1d5db; }
+          .print-page { box-sizing: border-box; width: ${menuTemplate.pageWidth}mm; max-width: calc(100vw - 32px); margin: 32px auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,.15); border: 1px solid #d1d5db; }
           .no-print { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 10; background: #f3f4f6; padding: 12px 32px; font-size: 13px; color: #4b5563; border-bottom: 1px solid #e5e7eb; }
         }
         @media print {
           .no-print { display: none !important; }
           body { background: white; }
-          .print-page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0; padding: 20mm 18mm; break-after: page; overflow: hidden; }
+          .print-page { box-sizing: border-box; width: ${menuTemplate.pageWidth}mm; height: ${menuTemplate.pageHeight}mm; margin: 0; break-after: page; overflow: hidden; }
           .print-page:last-child { break-after: auto; }
         }
       `}</style>
 
       <div className="no-print">
         <span>
-          Print preview &mdash;{' '}
-          <Link to="/menu-render" style={{ color: '#4f46e5' }}>back to screen version</Link>
-          &nbsp;·&nbsp;
-          <Link to="/menu-preview" style={{ color: '#4f46e5' }}>visual preview</Link>
+          Print preview &mdash; {menuTemplate.name} ({menuTemplate.pages.length} {menuTemplate.pages.length === 1 ? 'page' : 'pages'}) &nbsp;·&nbsp;
+          <Link to={`/menu/${menuTemplate.id}`} style={{ color: '#4f46e5' }}>back to editor</Link>
         </span>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            style={{ background: 'black', color: 'white', border: 'none', borderRadius: 6, padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            Print / Save as PDF
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{ background: 'black', color: 'white', border: 'none', borderRadius: 6, padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          Print / Save as PDF
+        </button>
       </div>
 
-      <div className="print-page">
-        <div className="page-header">
-          <h1>Pagu</h1>
-          <p>Restaurant Menu</p>
-        </div>
-        {sections.map((section) => (
-          <div key={section} className="menu-section">
-            <h2>{section}</h2>
-            <ul>
-              {items.filter((i) => i.section === section).map((item) => (
-                <li key={item.id} className="menu-item">
-                  <div className="menu-item-left">
-                    <div className="menu-item-name-row">
-                      <span className="menu-item-name">{item.name}</span>
-                      <span className="leader" />
-                    </div>
-                    {item.description && <p className="menu-item-desc">{item.description}</p>}
-                  </div>
-                  <span className="menu-item-price">{formatPrice(item.price ?? 0)}</span>
-                </li>
-              ))}
-            </ul>
+      {menuTemplate.pages.map((page, pageIndex) => {
+        const { cols, rows } = subdivisionGrid(page.subdivision as 'full' | 'cols2' | 'rows2' | 'grid4');
+        const cellWidthPx = pageWidthPx / cols;
+        const cellHeightPx = pageHeightPx / rows;
+
+        return (
+          <div
+            key={pageIndex}
+            className="print-page"
+            style={{ ...designTokens, position: 'relative', width: pageWidthPx, height: pageHeightPx }}
+          >
+            {Array.from({ length: cols }, (_, col) =>
+              Array.from({ length: rows }, (_, row) => {
+                const offsetX = col * cellWidthPx;
+                const offsetY = row * cellHeightPx;
+                return page.nodes.map((node) => (
+                  <PrintNode
+                    key={`${pageIndex}-${col}-${row}-${node.id}`}
+                    node={{ ...node, x: node.x + offsetX, y: node.y + offsetY }}
+                    liquid={liquid}
+                    dataModel={dataModel}
+                  />
+                ));
+              })
+            )}
           </div>
-        ))}
-        <div className="page-footer">
-          Prices include applicable taxes. Menu subject to change.
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }

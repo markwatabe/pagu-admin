@@ -4,17 +4,19 @@ import { ProtectedLayout } from './components/ProtectedLayout';
 import { LoginPage } from './pages/LoginPage';
 import { UsersPage } from './pages/UsersPage';
 import { ReviewsPage } from './pages/ReviewsPage';
-import { MenuBuilderPage } from './pages/MenuBuilderPage';
+
 import { MenuIngredientsPage } from './pages/MenuIngredientsPage';
 import { MenuRenderPage } from './pages/MenuRenderPage';
 import { MenuRenderPrintPage } from './pages/MenuRenderPrintPage';
 import { MenuPreviewPage } from './pages/MenuPreviewPage';
-import { LayoutEditorPage } from './pages/LayoutEditorPage';
+import { LayoutEditorPage, LayoutEditorPickerPage } from './pages/LayoutEditorPage';
 import { IngredientPage } from './pages/IngredientPage';
 import { IngredientsPage } from './pages/IngredientsPage';
 import { RecipesPage } from './pages/RecipesPage';
 import { ChartExamplesPage } from './pages/ChartExamplesPage';
 import { UploadImagePage } from './pages/UploadImagePage';
+import { DishesPage } from './pages/DishesPage';
+import { DishPage } from './pages/DishPage';
 
 export function App() {
   return (
@@ -27,19 +29,21 @@ export function App() {
             <Route index element={<Navigate to="/users" replace />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/reviews" element={<ReviewsPage />} />
-            <Route path="/menu-builder" element={<MenuBuilderPage />} />
             <Route path="/menu-ingredients" element={<MenuIngredientsPage />} />
             <Route path="/menu-render" element={<MenuRenderPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
+            <Route path="/dishes" element={<DishesPage />} />
+            <Route path="/dishes/:id" element={<DishPage />} />
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/ingredient/:id" element={<IngredientPage />} />
             <Route path="/chart-examples" element={<ChartExamplesPage />} />
             <Route path="/upload-image" element={<UploadImagePage />} />
+            <Route path="/menu" element={<LayoutEditorPickerPage />} />
           </Route>
           {/* Full-page views — no AppLayout nav */}
-          <Route path="/menu-render-print" element={<MenuRenderPrintPage />} />
+          <Route path="/menu-render-print/:id" element={<MenuRenderPrintPage />} />
           <Route path="/menu-preview" element={<MenuPreviewPage />} />
-          <Route path="/layout-editor" element={<LayoutEditorPage />} />
+          <Route path="/menu/:id" element={<LayoutEditorPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

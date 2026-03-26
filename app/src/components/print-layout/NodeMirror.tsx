@@ -26,7 +26,7 @@ export function NodeMirror({ node, liquid, dataModel, offsetX, offsetY }: NodeMi
         pointerEvents: 'none',
       }}
     >
-      <div className={`h-full w-full overflow-hidden ${node.classes}`}>
+      <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...node.style }}>
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     </div>
