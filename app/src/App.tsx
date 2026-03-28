@@ -18,6 +18,8 @@ import { AccountPage } from './pages/AccountPage';
 import { OrgPage } from './pages/OrgPage';
 import { DishesPage } from './pages/DishesPage';
 import { DishPage } from './pages/DishPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { PlanPage } from './pages/PlanPage';
 
 export function App() {
   return (
@@ -32,6 +34,7 @@ export function App() {
           <Route path="/:orgId">
             {/* Pages with nav/footer */}
             <Route element={<AppLayout />}>
+              <Route index element={<DashboardPage />} />
               <Route path="reviews" element={<ReviewsPage />} />
               <Route path="menu-ingredients" element={<MenuIngredientsPage />} />
               <Route path="menu-render" element={<MenuRenderPage />} />
@@ -45,6 +48,7 @@ export function App() {
               <Route path="account" element={<AccountPage />} />
               <Route path="org" element={<OrgPage />} />
               <Route path="menu" element={<LayoutEditorPickerPage />} />
+              <Route path="plan" element={<PlanPage />} />
             </Route>
             {/* Full-page views — no AppLayout nav */}
             <Route path="menu-render-print/:id" element={<MenuRenderPrintPage />} />
