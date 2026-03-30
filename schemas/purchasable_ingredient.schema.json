@@ -1,0 +1,71 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "purchasable_ingredient.schema.json",
+    "title": "Purchasable Ingredient",
+    "description": "A raw or pre-made ingredient that is purchased, not made in-house",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier in UPPER_SNAKE_CASE",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "parent": {
+            "type": "string",
+            "description": "ID of a parent ingredient this is a variant of (e.g. SHIRO_MISO -> MISO)"
+        },
+        "production_type": {
+            "type": "string",
+            "const": "purchasable",
+            "description": "Always 'purchasable' for items in this folder"
+        },
+        "type": {
+            "type": "string",
+            "description": "Category of the ingredient (e.g. dairy, spice, oil, produce, nut, grain)"
+        },
+        "name": {
+            "type": "string",
+            "description": "Display name. If omitted, derived from the id via title-casing"
+        },
+        "unit": {
+            "type": "string",
+            "description": "Default unit of measure (e.g. gram, piece, whole, teaspoon, pinch)"
+        },
+        "sub_ingredients": {
+            "type": "array",
+            "description": "IDs of constituent ingredients for labeling/allergen tracing",
+            "items": {
+                "type": "string"
+            }
+        },
+        "allergen": {
+            "type": "boolean",
+            "description": "Whether this is a common allergen (FDA top 9)"
+        },
+        "conversions": {
+            "type": "array",
+            "description": "Unit conversion factors for this ingredient",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "base_unit": {
+                        "type": "string",
+                        "description": "The source unit to convert from"
+                    },
+                    "multiplier": {
+                        "type": "number",
+                        "description": "Multiply by this factor to get the target unit"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "description": "The target unit"
+                    }
+                },
+                "required": ["base_unit", "multiplier", "unit"],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": ["id", "production_type", "type", "unit"],
+    "additionalProperties": false
+}

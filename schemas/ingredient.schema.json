@@ -1,0 +1,111 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "ingredient.schema.json",
+    "title": "In-House Ingredient",
+    "description": "A recipe for an ingredient made in-house from other ingredients",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier in UPPER_SNAKE_CASE",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "production_type": {
+            "type": "string",
+            "const": "IN_HOUSE",
+            "description": "Always 'IN_HOUSE' for items in this folder"
+        },
+        "ingredient_type": {
+            "type": "string",
+            "description": "Category of the finished product (e.g. sauce, dressing, dessert, garnish, cookie, marinade, spread, granola)"
+        },
+        "name": {
+            "type": "string",
+            "description": "Display name of the recipe"
+        },
+        "yields": {
+            "type": "array",
+            "description": "Yield of one batch as [amount, unit]",
+            "prefixItems": [
+                {
+                    "type": "number",
+                    "description": "Yield quantity"
+                },
+                {
+                    "type": "string",
+                    "description": "Yield unit (e.g. cookie, portion, gram)"
+                }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+        },
+        "ingredients": {
+            "type": "array",
+            "description": "Recipe ingredients as [amount, unit, ingredientId] tuples",
+            "items": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "number",
+                        "description": "Amount"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unit of measure (e.g. gram, teaspoon, piece, whole, pinch)"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Ingredient ID referencing either ingredients/ or purchasable_ingredients/"
+                    }
+                ],
+                "minItems": 3,
+                "maxItems": 3
+            }
+        },
+        "instructions": {
+            "type": "array",
+            "description": "Step-by-step preparation instructions",
+            "items": {
+                "type": "string"
+            }
+        },
+        "directions": {
+            "type": "array",
+            "description": "Additional usage or storage directions",
+            "items": {
+                "type": "string"
+            }
+        },
+        "equipment": {
+            "type": "array",
+            "description": "Equipment needed to prepare this recipe",
+            "items": {
+                "type": "string"
+            }
+        },
+        "instance_state": {
+            "type": "object",
+            "description": "Runtime state tracking for reusable batches",
+            "properties": {
+                "times_used": {
+                    "type": "object",
+                    "properties": {
+                        "start": {
+                            "type": "integer",
+                            "description": "Initial use count"
+                        },
+                        "max": {
+                            "type": "integer",
+                            "description": "Maximum number of times this batch can be used"
+                        }
+                    },
+                    "required": ["start", "max"],
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "required": ["id", "production_type", "ingredient_type", "name", "ingredients", "instructions", "equipment"],
+    "additionalProperties": false
+}

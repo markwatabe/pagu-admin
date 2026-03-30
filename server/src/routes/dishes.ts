@@ -9,7 +9,7 @@ export function dishRoutes(repoPath: string) {
   // GET /api/dishes — list all
   app.get('/', async (c) => {
     const files = await readdir(dishesDir);
-    const jsonFiles = files.filter((f) => f.endsWith('.json') && f !== 'dish.schema.json');
+    const jsonFiles = files.filter((f) => f.endsWith('.json'));
 
     const dishes = await Promise.all(
       jsonFiles.map(async (file) => {

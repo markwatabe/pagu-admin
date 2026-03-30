@@ -1,0 +1,114 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "sku.schema.json",
+    "title": "SKU",
+    "description": "A purchasable product SKU tracked for price history and metadata",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier in UPPER_SNAKE_CASE",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "ingredientId": {
+            "type": "string",
+            "description": "ID of the purchasable ingredient this SKU fulfills"
+        },
+        "brand": {
+            "type": "string",
+            "description": "Brand name of the product"
+        },
+        "name": {
+            "type": "string",
+            "description": "Product name as listed by the vendor"
+        },
+        "quantity": {
+            "type": "number",
+            "description": "Package quantity (parsed from Amazon 'Units' field)",
+            "minimum": 0
+        },
+        "unit": {
+            "type": "string",
+            "description": "Unit of the package quantity (e.g. Fluid Ounces, Pounds, Ounce, Count)"
+        },
+        "weight": {
+            "type": "string",
+            "description": "Item weight from product details (e.g. '10 Pounds')"
+        },
+        "dimensions": {
+            "type": "string",
+            "description": "Package dimensions from product details (e.g. '11.65 x 5.94 x 5.91 inches; 8.25 Pounds')"
+        },
+        "upc": {
+            "type": "string",
+            "description": "Universal Product Code from product details"
+        },
+        "manufacturer": {
+            "type": "string",
+            "description": "Manufacturer name from product details"
+        },
+        "ingredientList": {
+            "type": "array",
+            "description": "Raw ingredient list from the product label",
+            "items": {
+                "type": "string"
+            }
+        },
+        "url": {
+            "type": "string",
+            "description": "Product URL (e.g. Amazon listing)",
+            "format": "uri"
+        },
+        "asin": {
+            "type": "string",
+            "description": "Amazon Standard Identification Number",
+            "pattern": "^[A-Z0-9]{10}$"
+        },
+        "prices": {
+            "type": "array",
+            "description": "Price history with metadata, appended over time",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "price": {
+                        "type": "number",
+                        "description": "Price in USD",
+                        "minimum": 0
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date the price was recorded",
+                        "format": "date"
+                    },
+                    "rating": {
+                        "type": "number",
+                        "description": "Average star rating (e.g. 4.7)",
+                        "minimum": 0,
+                        "maximum": 5
+                    },
+                    "reviewCount": {
+                        "type": "integer",
+                        "description": "Number of customer reviews at time of capture",
+                        "minimum": 0
+                    },
+                    "isPrime": {
+                        "type": "boolean",
+                        "description": "Whether the product had Prime badge at time of capture"
+                    },
+                    "availability": {
+                        "type": "string",
+                        "description": "Stock status (e.g. 'In Stock', 'Only 3 left in stock')"
+                    },
+                    "delivery": {
+                        "type": "string",
+                        "description": "Delivery/shipping info (e.g. 'FREE delivery Today 2 PM - 6 PM')"
+                    }
+                },
+                "required": ["price", "date"],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": ["id", "name", "asin", "url", "prices"],
+    "additionalProperties": false
+}
