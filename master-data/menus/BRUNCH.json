@@ -1,0 +1,43 @@
+{
+    "id": "BRUNCH",
+    "name": "Brunch Menu",
+    "pageWidth": 215.9,
+    "pageHeight": 279.4,
+    "pages": [
+        {
+            "subdivision": "full",
+            "nodes": [
+                {
+                    "id": "header",
+                    "x": 167.12727864583334,
+                    "y": 808.2405598958334,
+                    "width": 600,
+                    "height": 60,
+                    "style": { "textAlign": "center", "fontSize": "var(--menu-header-size)", "fontWeight": "700", "letterSpacing": "0.2em", "textTransform": "uppercase" },
+                    "template": "{{ restaurant.name }} HI MOM",
+                    "query": null
+                },
+                {
+                    "id": "subtitle",
+                    "x": 20,
+                    "y": 80,
+                    "width": 600,
+                    "height": 30,
+                    "style": { "textAlign": "center", "fontSize": "var(--menu-desc-size)", "letterSpacing": "0.1em", "color": "var(--menu-muted)" },
+                    "template": "Weekend Brunch",
+                    "query": null
+                },
+                {
+                    "id": "all-items",
+                    "x": 40,
+                    "y": 140,
+                    "width": 560,
+                    "height": 30,
+                    "style": { "fontSize": "var(--menu-item-size)" },
+                    "template": "<div class=\"flex justify-between\"><span>{{ item.name }}</span><span>{{ item.price }}</span></div><div class=\"text-xs text-gray-500\">{{ item.description }}</div>",
+                    "query": "all_menu_items"
+                }
+            ]
+        }
+    ]
+}

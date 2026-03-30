@@ -1,0 +1,7 @@
+{
+    "id": "BROWN_SUGAR",
+    "production_type": "purchasable",
+    "type": "sugar",
+    "name": "Brown Sugar",
+    "unit": "gram"
+}

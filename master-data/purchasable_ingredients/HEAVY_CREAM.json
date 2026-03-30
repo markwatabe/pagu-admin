@@ -1,0 +1,8 @@
+{
+    "id": "HEAVY_CREAM",
+    "production_type": "purchasable",
+    "type": "dairy",
+    "name": "Heavy Cream",
+    "unit": "gram",
+    "allergen": true
+}

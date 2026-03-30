@@ -1,0 +1,8 @@
+{
+    "id": "SOY_LECITHIN",
+    "production_type": "purchasable",
+    "type": "emulsifier",
+    "unit": "gram",
+    "sub_ingredients": ["SOYBEANS"],
+    "allergen": true
+}

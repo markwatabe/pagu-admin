@@ -1,0 +1,7 @@
+{
+    "id": "CARAMELIZED_ONION",
+    "production_type": "purchasable",
+    "type": "vegetable",
+    "name": "Caramelized Onion",
+    "unit": "gram"
+}

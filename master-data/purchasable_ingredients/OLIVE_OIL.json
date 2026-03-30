@@ -1,0 +1,7 @@
+{
+    "id": "OLIVE_OIL",
+    "production_type": "purchasable",
+    "type": "oil",
+    "name": "Olive Oil",
+    "unit": "gram"
+}

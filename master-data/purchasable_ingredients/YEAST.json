@@ -1,0 +1,6 @@
+{
+    "id": "YEAST",
+    "production_type": "purchasable",
+    "type": "culture",
+    "unit": "gram"
+}

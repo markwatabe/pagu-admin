@@ -1,0 +1,9 @@
+{
+    "id": "DARK_CHOCOLATE_CHIPS",
+    "production_type": "purchasable",
+    "type": "dry",
+    "name": "Dark Chocolate Chips",
+    "unit": "gram",
+    "sub_ingredients": ["CACAO", "SUGAR", "COCOA_BUTTER", "SOY_LECITHIN"],
+    "allergen": true
+}

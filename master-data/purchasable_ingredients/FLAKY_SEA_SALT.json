@@ -1,0 +1,7 @@
+{
+    "id": "FLAKY_SEA_SALT",
+    "production_type": "purchasable",
+    "type": "salt",
+    "name": "Flaky Sea Salt",
+    "unit": "pinch"
+}

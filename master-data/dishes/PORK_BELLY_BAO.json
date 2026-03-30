@@ -1,0 +1,13 @@
+{
+    "id": "PORK_BELLY_BAO",
+    "name": "Pork Belly Bao",
+    "description": "Braised pork belly in steamed bao buns with pickled vegetables and hoisin",
+    "price": 16,
+    "available": true,
+    "components": [
+        "braised_pork_belly",
+        "steamed_bao_buns",
+        "pickled_vegetables",
+        "hoisin_sauce"
+    ]
+}

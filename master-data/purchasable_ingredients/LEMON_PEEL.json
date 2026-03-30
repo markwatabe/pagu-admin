@@ -1,0 +1,7 @@
+{
+    "id": "LEMON_PEEL",
+    "production_type": "purchasable",
+    "type": "citrus",
+    "name": "Lemon Peel",
+    "unit": "piece"
+}

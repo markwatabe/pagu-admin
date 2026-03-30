@@ -16,7 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
 const repoPath = process.env.REPO_PATH
   ? path.resolve(process.env.REPO_PATH)
-  : path.resolve(__dirname, '..', '..', 'REPO');
+  : path.resolve(__dirname, '..', '..', 'master-data');
 
 const app = new Hono();
 

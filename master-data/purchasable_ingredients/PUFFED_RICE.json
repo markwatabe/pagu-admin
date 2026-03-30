@@ -1,0 +1,7 @@
+{
+    "id": "PUFFED_RICE",
+    "production_type": "purchasable",
+    "type": "grain",
+    "name": "Puffed Rice",
+    "unit": "gram"
+}

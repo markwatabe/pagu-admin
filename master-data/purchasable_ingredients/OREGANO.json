@@ -1,0 +1,7 @@
+{
+    "id": "OREGANO",
+    "production_type": "purchasable",
+    "type": "spice",
+    "name": "Oregano",
+    "unit": "teaspoon"
+}

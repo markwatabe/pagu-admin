@@ -1,0 +1,7 @@
+{
+    "id": "SUSHI_VINEGAR",
+    "production_type": "purchasable",
+    "type": "vinegar",
+    "name": "Sushi Vinegar",
+    "unit": "gram"
+}

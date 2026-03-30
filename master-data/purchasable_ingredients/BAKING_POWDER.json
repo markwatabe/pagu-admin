@@ -1,0 +1,8 @@
+{
+    "id": "BAKING_POWDER",
+    "production_type": "purchasable",
+    "type": "dry",
+    "name": "Baking Powder",
+    "unit": "gram",
+    "sub_ingredients": ["SODIUM_BICARBONATE", "CREAM_OF_TARTAR", "CORNSTARCH"]
+}

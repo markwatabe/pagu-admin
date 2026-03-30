@@ -1,0 +1,7 @@
+{
+    "id": "BLACK_GARLIC",
+    "production_type": "purchasable",
+    "type": "vegetable",
+    "name": "Black Garlic",
+    "unit": "gram"
+}

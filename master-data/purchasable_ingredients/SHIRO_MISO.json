@@ -1,0 +1,9 @@
+{
+    "id": "SHIRO_MISO",
+    "parent": "MISO",
+    "production_type": "purchasable",
+    "type": "paste",
+    "unit": "gram",
+    "sub_ingredients": ["SOYBEANS", "RICE", "RICE_KOJI", "SALT", "WATER"],
+    "allergen": true
+}

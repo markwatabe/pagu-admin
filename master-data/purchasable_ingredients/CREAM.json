@@ -1,0 +1,8 @@
+{
+    "id": "CREAM",
+    "production_type": "purchasable",
+    "type": "dairy",
+    "unit": "gram",
+    "sub_ingredients": ["MILK"],
+    "allergen": true
+}

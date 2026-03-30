@@ -1,0 +1,9 @@
+{
+    "id": "SOY_SAUCE",
+    "production_type": "purchasable",
+    "type": "sauce",
+    "unit": "gram",
+    "sub_ingredients": ["SOYBEANS", "WHEAT", "SALT", "WATER"],
+    "allergen": true
+}
+

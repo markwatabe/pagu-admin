@@ -1,0 +1,7 @@
+{
+    "id": "BLACK_PEPPER",
+    "production_type": "purchasable",
+    "type": "spice",
+    "name": "Black Pepper",
+    "unit": "gram"
+}

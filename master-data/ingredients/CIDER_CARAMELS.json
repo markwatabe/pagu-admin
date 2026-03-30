@@ -1,0 +1,34 @@
+{
+    "id": "CIDER_CARAMELS",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "dessert",
+    "name": "Cider Caramels",
+    "ingredients": [
+        [1890, "gram", "APPLE_CIDER"],
+        [400, "gram", "ORGANIC_CANE_SUGAR"],
+        [230, "gram", "BUTTER"],
+        [220, "gram", "LIGHT_BROWN_SUGAR"],
+        [160, "gram", "HEAVY_CREAM"],
+        [1, "pinch", "FLAKY_SEA_SALT"]
+    ],
+    "instructions": [
+        "In medium pot on medium heat, reduce apple cider by half",
+        "Add butter and stir until melted",
+        "Add sugars",
+        "Heat to 123C and add heavy cream",
+        "Heat back to 123C and pour into a sheet tray lined with parchment paper. Caramel thickness should be thickness of sheet tray.",
+        "Sprinkle flaky sea salt on top so every caramel piece will have some",
+        "Let it cool at room temperature",
+        "Cut and wrap them",
+        "Store into quarts, label, date, refrigerate or freeze"
+    ],
+    "directions": [
+        "If cutting the caramels the day after, cover the sheet tray with plastic wrap"
+    ],
+    "equipment": [
+        "medium pot",
+        "sheet tray",
+        "parchment paper",
+        "thermometer"
+    ]
+}

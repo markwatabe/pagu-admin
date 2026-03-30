@@ -1,0 +1,40 @@
+{
+    "id": "GLUTEN_FREE_GRANOLA",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "granola",
+    "name": "Gluten-Free Savory Granola",
+    "ingredients": [
+        [6000, "gram", "ROLLED_OATS_GF"],
+        [3400, "gram", "BUCKWHEAT_FLOUR"],
+        [3000, "gram", "MAPLE_SYRUP"],
+        [2500, "gram", "OLIVE_OIL"],
+        [2000, "gram", "EGG_WHITES"],
+        [1800, "gram", "PUFFED_RICE"],
+        [1020, "gram", "ORGANIC_CANE_SUGAR"],
+        [500, "gram", "PUMPKIN_SEEDS"],
+        [70, "gram", "SEA_SALT"]
+    ],
+    "instructions": [
+        "In a large mixing bowl, mix well all the dry ingredients (puffed rice, buckwheat flour, rolled oats, pumpkin seeds, sea salt, sugar)",
+        "Add the olive oil and maple syrup and mix well, tossing with a rubber spatula",
+        "In a separate mixing bowl with whisk attachment, whip egg whites to soft peaks, 2-3 minutes",
+        "Fold the egg whites into the dry ingredients gently, keeping everything light",
+        "The mixture should be damp, not too wet, not too dry, not crumbly",
+        "Line sheet trays with parchment. Do not push the mix into the sheet tray too firmly or it will be too hard.",
+        "The mixture should be pressed together gently and after baking, it should be able to crumble apart easily",
+        "Bake at 325F in convection or Rational until golden 15-20 min. Be sure to rotate tray to avoid spotty cooking.",
+        "Remove to cool on the rack",
+        "Break apart gently to large chunks, not broken crumbs, to store in Cambro or vacuum seal",
+        "Make sure Cambro is sealed air tight!",
+        "Label, date. Shelf life is 1 month. Make fresh regularly, weekly, in small batches!"
+    ],
+    "equipment": [
+        "large mixing bowl",
+        "whisk attachment",
+        "sheet trays",
+        "parchment paper",
+        "convection oven or Rational",
+        "cooling rack",
+        "Cambro or vacuum seal"
+    ]
+}

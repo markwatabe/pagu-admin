@@ -1,0 +1,7 @@
+{
+    "id": "LIGHT_BROWN_SUGAR",
+    "production_type": "purchasable",
+    "type": "sugar",
+    "name": "Light Brown Sugar",
+    "unit": "gram"
+}

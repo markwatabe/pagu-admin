@@ -1,0 +1,7 @@
+{
+    "id": "LIME_JUICE",
+    "production_type": "purchasable",
+    "type": "citrus",
+    "name": "Lime Juice",
+    "unit": "gram"
+}

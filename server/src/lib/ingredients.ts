@@ -3,8 +3,8 @@ import path from 'node:path';
 
 /**
  * Looks up an ingredient by ID across both directories:
- *   - REPO/ingredients/          (in-house / made items)
- *   - REPO/purchasable_ingredients/  (purchased raw ingredients)
+ *   - master-data/ingredients/          (in-house / made items)
+ *   - master-data/purchasable_ingredients/  (purchased raw ingredients)
  *
  * Callers (recipes, menus, routes) don't need to know which type it is.
  */

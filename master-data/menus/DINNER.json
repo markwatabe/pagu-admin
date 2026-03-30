@@ -1,0 +1,103 @@
+{
+    "id": "DINNER",
+    "name": "Dinner Menu",
+    "pageWidth": 215.9,
+    "pageHeight": 279.4,
+    "pages": [
+        {
+            "subdivision": "full",
+            "nodes": [
+                {
+                    "id": "header",
+                    "x": 20,
+                    "y": 20,
+                    "width": 557.94921875,
+                    "height": 60.83984375,
+                    "style": {
+                        "textAlign": "center",
+                        "fontSize": "var(--menu-header-size)",
+                        "fontWeight": "700",
+                        "letterSpacing": "0.2em",
+                        "textTransform": "uppercase"
+                    },
+                    "template": "{{ restaurant.name }} BAGU",
+                    "query": null
+                },
+                {
+                    "id": "subtitle",
+                    "x": 20,
+                    "y": 80,
+                    "width": 300,
+                    "height": 30,
+                    "style": {
+                        "textAlign": "center",
+                        "fontSize": "var(--menu-desc-size)",
+                        "letterSpacing": "0.1em",
+                        "color": "var(--menu-muted)"
+                    },
+                    "template": "{{ restaurant.subtitle }}",
+                    "query": null
+                },
+                {
+                    "id": "tapas-items",
+                    "x": 20,
+                    "y": 130,
+                    "width": 501.54622395833337,
+                    "height": 664.8795572916667,
+                    "style": {
+                        "fontSize": "12px",
+                        "textAlign": "left",
+                        "fontWeight": "700"
+                    },
+                    "template": "<div class=\"flex justify-between\"><span>{{ item.name }}</span><span>{{ item.price }}</span></div><div class=\"text-xs text-gray-500\">{{ item.description }}</div>",
+                    "query": "tapas"
+                },
+                {
+                    "id": "land-sea-items",
+                    "x": 20,
+                    "y": 400,
+                    "width": 300,
+                    "height": 30,
+                    "style": {
+                        "fontSize": "var(--menu-item-size)"
+                    },
+                    "template": "<div class=\"flex justify-between\"><span>{{ item.name }}</span><span>{{ item.price }}</span></div><div class=\"text-xs text-gray-500\">{{ item.description }}</div>",
+                    "query": "land_and_sea"
+                }
+            ]
+        },
+        {
+            "subdivision": "full",
+            "nodes": [
+                {
+                    "id": "sweet-header",
+                    "x": 20,
+                    "y": 20,
+                    "width": 600,
+                    "height": 40,
+                    "style": {
+                        "textAlign": "center",
+                        "fontSize": "20px",
+                        "fontWeight": "700",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "0.2em"
+                    },
+                    "template": "Desserts",
+                    "query": null
+                },
+                {
+                    "id": "sweet-items",
+                    "x": 40,
+                    "y": 80,
+                    "width": 560,
+                    "height": 30,
+                    "style": {
+                        "fontSize": "var(--menu-item-size)"
+                    },
+                    "template": "<div class=\"flex justify-between\"><span>{{ item.name }}</span><span>{{ item.price }}</span></div>",
+                    "query": "sweet"
+                }
+            ]
+        }
+    ]
+}

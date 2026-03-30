@@ -1,0 +1,7 @@
+{
+    "id": "CORNSTARCH",
+    "production_type": "purchasable",
+    "type": "dry",
+    "unit": "gram",
+    "sub_ingredients": ["CORN"]
+}

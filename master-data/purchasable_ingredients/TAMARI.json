@@ -1,0 +1,8 @@
+{
+    "id": "TAMARI",
+    "production_type": "purchasable",
+    "type": "soy",
+    "name": "Tamari",
+    "unit": "gram",
+    "allergen": true
+}

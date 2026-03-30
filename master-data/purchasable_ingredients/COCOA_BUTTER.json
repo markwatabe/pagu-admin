@@ -1,0 +1,7 @@
+{
+    "id": "COCOA_BUTTER",
+    "production_type": "purchasable",
+    "type": "fat",
+    "unit": "gram",
+    "sub_ingredients": ["CACAO"]
+}

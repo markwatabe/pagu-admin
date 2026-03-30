@@ -1,0 +1,6 @@
+{
+    "id": "WATER",
+    "production_type": "purchasable",
+    "type": "liquid",
+    "unit": "gram"
+}

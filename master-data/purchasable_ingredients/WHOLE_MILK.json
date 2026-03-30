@@ -1,0 +1,8 @@
+{
+    "id": "WHOLE_MILK",
+    "production_type": "purchasable",
+    "type": "dairy",
+    "name": "Whole Milk",
+    "unit": "gram",
+    "allergen": true
+}

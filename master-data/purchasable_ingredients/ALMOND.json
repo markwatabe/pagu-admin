@@ -1,0 +1,7 @@
+{
+    "id": "ALMOND",
+    "production_type": "purchasable",
+    "type": "nut",
+    "unit": "gram",
+    "allergen": true
+}

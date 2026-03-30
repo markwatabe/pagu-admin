@@ -1,0 +1,9 @@
+{
+    "id": "BUTTER",
+    "production_type": "purchasable",
+    "type": "dairy",
+    "name": "Butter",
+    "unit": "gram",
+    "sub_ingredients": ["CREAM", "SALT"],
+    "allergen": true
+}
