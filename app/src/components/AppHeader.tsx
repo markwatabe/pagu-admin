@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { path: 'reviews', label: 'Reviews' },
   { path: 'recipes', label: 'Recipes' },
   { path: 'ingredients', label: 'Ingredients' },
+  { path: 'skus', label: 'SKUs' },
   { path: 'files', label: 'Files' },
 ];
 

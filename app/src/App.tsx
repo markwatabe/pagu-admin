@@ -20,6 +20,7 @@ import { DishesPage } from './pages/DishesPage';
 import { DishPage } from './pages/DishPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlanPage } from './pages/PlanPage';
+import { SkusPage } from './pages/SkusPage';
 
 export function App() {
   return (
@@ -49,6 +50,7 @@ export function App() {
               <Route path="org" element={<OrgPage />} />
               <Route path="menu" element={<LayoutEditorPickerPage />} />
               <Route path="plan" element={<PlanPage />} />
+              <Route path="skus" element={<SkusPage />} />
             </Route>
             {/* Full-page views — no AppLayout nav */}
             <Route path="menu-render-print/:id" element={<MenuRenderPrintPage />} />

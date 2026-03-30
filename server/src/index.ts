@@ -11,6 +11,7 @@ import { dishRoutes } from './routes/dishes.js';
 import { menuRoutes } from './routes/menus.js';
 import { designTokenRoutes } from './routes/designTokens.js';
 import { chatRoutes } from './routes/chat.js';
+import { skuRoutes } from './routes/skus.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -29,6 +30,7 @@ app.route('/api/dishes', dishRoutes(repoPath));
 app.route('/api/menus', menuRoutes(repoPath));
 app.route('/api/design-tokens', designTokenRoutes(repoPath));
 app.route('/api/chat', chatRoutes(repoPath));
+app.route('/api/skus', skuRoutes(repoPath));
 
 // In production, serve the built frontend
 if (isProduction) {
