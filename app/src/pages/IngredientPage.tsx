@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const BATCH_SIZES = [0.5, 1, 2, 3, 4] as const;
 
@@ -9,6 +9,12 @@ interface ResolvedIngredient {
   unit: string;
   ingredientId: string;
   name: string;
+}
+
+interface IngredientSummary {
+  id: string;
+  name: string;
+  unit?: string;
 }
 
 interface IngredientDetail {
@@ -25,13 +31,147 @@ interface IngredientDetail {
   equipment?: string[];
 }
 
+function AddIngredientForm({
+  recipeId,
+  onAdded,
+}: {
+  recipeId: string;
+  onAdded: () => void;
+}) {
+  const [allIngredients, setAllIngredients] = useState<IngredientSummary[]>([]);
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<IngredientSummary | null>(null);
+  const [amount, setAmount] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/ingredients')
+      .then((r) => r.json())
+      .then(setAllIngredients)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const filtered = search
+    ? allIngredients.filter((i) =>
+        i.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : allIngredients;
+
+  function handleSelect(ing: IngredientSummary) {
+    setSelected(ing);
+    setSearch(ing.name);
+    setDropdownOpen(false);
+  }
+
+  function handleSearchChange(val: string) {
+    setSearch(val);
+    setSelected(null);
+    setDropdownOpen(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected || !amount) return;
+    setSubmitting(true);
+    try {
+      await fetch(`/api/ingredients/${recipeId}/ingredients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ingredientId: selected.id,
+          amount: parseFloat(amount),
+          unit: selected.unit ?? 'gram',
+        }),
+      });
+      setSearch('');
+      setSelected(null);
+      setAmount('');
+      onAdded();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 flex items-end gap-3">
+      <div ref={wrapperRef} className="relative flex-1">
+        <label className="mb-1 block text-xs font-semibold text-gray-500">Ingredient</label>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          onFocus={() => setDropdownOpen(true)}
+          placeholder="Search ingredients..."
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+        {dropdownOpen && filtered.length > 0 && (
+          <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+            {filtered.map((ing) => (
+              <li key={ing.id}>
+                <button
+                  type="button"
+                  onClick={() => handleSelect(ing)}
+                  className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                >
+                  <span>{ing.name}</span>
+                  {ing.unit && (
+                    <span className="text-xs text-gray-400">{ing.unit}</span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="w-36">
+        <label className="mb-1 block text-xs font-semibold text-gray-500">Amount</label>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            step="any"
+            min="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            disabled={!selected}
+            placeholder="0"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+          />
+          {selected?.unit && (
+            <span className="shrink-0 text-xs text-gray-500">{selected.unit}</span>
+          )}
+        </div>
+      </div>
+      <button
+        type="submit"
+        disabled={!selected || !amount || submitting}
+        className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Add
+      </button>
+    </form>
+  );
+}
+
 export function IngredientPage() {
   const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const [data, setData] = useState<IngredientDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [batchSize, setBatchSize] = useState(1);
+  const [rev, setRev] = useState(0);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetch(`/api/ingredients/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Ingredient not found' : `HTTP ${r.status}`);
@@ -40,6 +180,10 @@ export function IngredientPage() {
       .then(setData)
       .catch((e) => setError(e.message));
   }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, rev]);
 
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
   if (!data) return <Spinner />;
@@ -140,6 +284,10 @@ export function IngredientPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {data.production_type === 'IN_HOUSE' && (
+        <AddIngredientForm recipeId={data.id} onAdded={() => setRev((r) => r + 1)} />
       )}
 
       {data.instructions && data.instructions.length > 0 && (

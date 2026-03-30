@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +12,7 @@ interface Dish {
 }
 
 export function DishesPage() {
+  const { orgId } = useParams<{ orgId: string }>();
   const [dishes, setDishes] = useState<Dish[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,7 @@ export function DishesPage() {
         {dishes.map((dish) => (
           <Link
             key={dish.id}
-            to={`/dishes/${dish.id}`}
+            to={`/${orgId}/dishes/${dish.id}`}
             className="block overflow-hidden rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
           >
             <div className="flex items-center justify-between">

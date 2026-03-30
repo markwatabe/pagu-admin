@@ -23,6 +23,14 @@ const rules = {
       "delete": "true",
     },
   },
+  events: {
+    allow: {
+      "view": "true",
+      "create": "true",
+      "update": "true",
+      "delete": "true",
+    },
+  },
   orgRoles: {
     allow: {
       "view": "true",

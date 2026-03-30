@@ -12,7 +12,7 @@ interface Dish {
 }
 
 export function DishPage() {
-  const { id } = useParams<{ id: string }>();
+  const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const [dish, setDish] = useState<Dish | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +32,7 @@ export function DishPage() {
   return (
     <section className="mx-auto max-w-3xl px-6 py-16">
       <div className="mb-8">
-        <Link to="/dishes" className="text-sm text-indigo-600 hover:text-indigo-800">
+        <Link to={`/${orgId}/dishes`} className="text-sm text-indigo-600 hover:text-indigo-800">
           &larr; All Dishes
         </Link>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">{dish.name}</h1>

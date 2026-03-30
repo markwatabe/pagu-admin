@@ -1,7 +1,8 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 import { gitCommit } from './git.js';
+import { getIngredient, listAllIngredients, resolveIngredientDir } from './ingredients.js';
 
 export const AGENT_TOOLS: Tool[] = [
   {
@@ -52,13 +53,10 @@ export async function executeToolCall(
   toolName: string,
   input: Record<string, string>,
 ): Promise<string> {
-  const ingredientsDir = path.join(repoPath, 'ingredients');
-
   switch (toolName) {
     case 'list_ingredients': {
       try {
-        const files = await readdir(ingredientsDir);
-        const jsonFiles = files.filter((f) => f.endsWith('.json')).sort();
+        const jsonFiles = await listAllIngredients(repoPath);
         return JSON.stringify(jsonFiles);
       } catch (err) {
         return `Error listing ingredients: ${err instanceof Error ? err.message : String(err)}`;
@@ -67,11 +65,9 @@ export async function executeToolCall(
     case 'read_ingredient': {
       try {
         const safeId = sanitizeId(input.id);
-        const content = await readFile(
-          path.join(ingredientsDir, `${safeId}.json`),
-          'utf-8',
-        );
-        return content;
+        const data = await getIngredient(repoPath, safeId);
+        if (!data) return `Ingredient not found: ${safeId}`;
+        return JSON.stringify(data, null, 2);
       } catch (err) {
         return `Error reading ingredient ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
       }
@@ -79,10 +75,12 @@ export async function executeToolCall(
     case 'write_ingredient': {
       try {
         const safeId = sanitizeId(input.id);
-        const filePath = path.join(ingredientsDir, `${safeId}.json`);
+        const dir = await resolveIngredientDir(repoPath, safeId);
+        const filePath = path.join(dir, `${safeId}.json`);
+        const relPath = path.relative(repoPath, filePath);
         await writeFile(filePath, input.content, 'utf-8');
-        await gitCommit(repoPath, `ingredients/${safeId}.json`, input.message);
-        return `Successfully wrote ingredients/${safeId}.json and committed`;
+        await gitCommit(repoPath, relPath, input.message);
+        return `Successfully wrote ${relPath} and committed`;
       } catch (err) {
         return `Error writing ingredient ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
       }

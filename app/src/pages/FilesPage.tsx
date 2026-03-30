@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { db } from '../lib/db';
 import { ClickToEdit } from '../components/ClickToEdit';
+import { ViewToggle, useViewToggle } from '../components/ViewToggle';
 
 const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif']);
 
@@ -20,9 +20,7 @@ export function FilesPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const view = searchParams.get('view') === 'table' ? 'table' : 'cards';
-  const setView = (v: 'cards' | 'table') => setSearchParams({ view: v }, { replace: true });
+  const [view, setView] = useViewToggle();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -217,24 +215,7 @@ export function FilesPage() {
                 </button>
               )}
             </div>
-            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">
-              <button
-                onClick={() => { setView('cards'); setSelected(new Set()); }}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${view === 'cards' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:text-indigo-600'}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="inline h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setView('table')}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${view === 'table' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:text-indigo-600'}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="inline h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
+            <ViewToggle view={view} onChangeView={(v) => { setView(v); if (v === 'cards') setSelected(new Set()); }} />
           </div>
 
           {view === 'cards' ? (

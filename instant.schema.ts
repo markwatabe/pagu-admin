@@ -51,6 +51,14 @@ const _schema = i.schema({
       role: i.string(), // 'admin' | 'editor' | 'operator'
       created_at: i.number().optional(),
     }),
+    events: i.entity({
+      name: i.string(),
+      type: i.string(), // 'buyout' | 'large_party'
+      date: i.number(), // epoch ms, start of day
+      revenue: i.number(),
+      guests: i.number(),
+      notes: i.string().optional(),
+    }),
     reviews: i.entity({
       author: i.string().optional(),
       body: i.string().optional(),
@@ -133,6 +141,18 @@ const _schema = i.schema({
         on: "$files",
         has: "many",
         label: "logoForOrgs",
+      },
+    },
+    eventsOrg: {
+      forward: {
+        on: "events",
+        has: "one",
+        label: "org",
+      },
+      reverse: {
+        on: "orgs",
+        has: "many",
+        label: "events",
       },
     },
     measuredIngredientsIngredient: {
