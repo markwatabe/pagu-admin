@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const INGREDIENTS_DIR = path.join(__dirname, "..", "ingredients");
+const INGREDIENTS_DIR = path.join(__dirname, "..", "recipes");
 
 function loadAllIngredients() {
   const files = fs

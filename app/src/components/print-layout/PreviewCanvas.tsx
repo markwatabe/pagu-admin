@@ -1,11 +1,20 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import type { DragEndEvent } from '@dnd-kit/core'
+import type { DragEndEvent, Modifier } from '@dnd-kit/core'
 import type { Liquid } from 'liquidjs'
 import { MM_TO_PX, subdivisionGrid } from './types'
 import { NodeDragHandle } from './NodeDragHandle'
 import { NodeMirror } from './NodeMirror'
 import type { LayoutNode, PageLayout } from './types'
+
+// 1 inch = 96px at 96 DPI
+const GRID_MAJOR = 96  // 1 inch
+const GRID_MINOR = 12  // 1/8 inch
+
+/** Round a value to the nearest grid increment. */
+function snap(value: number, grid: number): number {
+  return Math.round(value / grid) * grid
+}
 
 interface PreviewCanvasProps {
   pages: PageLayout[]
@@ -17,6 +26,7 @@ interface PreviewCanvasProps {
   liquid: Liquid
   dataModel: Record<string, unknown>
   tokenStyle?: Record<string, string>
+  showGrid?: boolean
   onSelectNode: (id: string | null) => void
   onUpdateNode: (id: string, patch: Partial<LayoutNode>) => void
   onSelectPage: (index: number) => void
@@ -26,7 +36,7 @@ interface PreviewCanvasProps {
 
 export function PreviewCanvas({
   pages, currentPageIndex, scale, pageWidth, pageHeight,
-  selectedNodeId, liquid, dataModel, tokenStyle,
+  selectedNodeId, liquid, dataModel, tokenStyle, showGrid,
   onSelectNode, onUpdateNode, onSelectPage, onAddPage, onRemovePage,
 }: PreviewCanvasProps) {
   const pageWidthPx  = pageWidth  * MM_TO_PX
@@ -50,14 +60,33 @@ export function PreviewCanvas({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   )
 
+  // Snap modifier: snaps the visual drag transform in real-time so the node
+  // jumps between grid lines while being dragged.
+  // The transform is in screen-space pixels, so we account for the current scale.
+  const snapModifier: Modifier = useMemo(() => {
+    if (!showGrid) return ({ transform }) => transform
+    const step = GRID_MINOR * scale
+    return ({ transform }) => ({
+      ...transform,
+      x: Math.round(transform.x / step) * step,
+      y: Math.round(transform.y / step) * step,
+    })
+  }, [showGrid, scale])
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, delta } = event
     const nodeId = active.id as string
     const node = currentNodesRef.current.find(n => n.id === nodeId)
     if (!node) return
 
-    const newX = node.x + delta.x / scaleRef.current
-    const newY = node.y + delta.y / scaleRef.current
+    let newX = node.x + delta.x / scaleRef.current
+    let newY = node.y + delta.y / scaleRef.current
+
+    if (showGrid) {
+      newX = snap(newX, GRID_MINOR)
+      newY = snap(newY, GRID_MINOR)
+    }
+
     const clampedX = Math.max(0, Math.min(newX, cellWidthPx  - node.width))
     const clampedY = Math.max(0, Math.min(newY, cellHeightPx - node.height))
 
@@ -68,7 +97,7 @@ export function PreviewCanvas({
 
   return (
     <div className="flex-1 overflow-auto bg-gray-200 p-8">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} modifiers={[snapModifier]} onDragEnd={handleDragEnd}>
         <div
           style={{
             transform: `scale(${scale})`,
@@ -113,6 +142,7 @@ export function PreviewCanvas({
                   data-testid={`page-canvas-${pageIndex}`}
                   style={{
                     ...tokenStyle,
+                    fontFamily: "'Bryant Pro', sans-serif",
                     width: pageWidthPx,
                     height: pageHeightPx,
                     position: 'relative',
@@ -128,10 +158,30 @@ export function PreviewCanvas({
                     }
                   }}
                 >
+                  {/* Grid overlay */}
+                  {showGrid && isActive && (
+                    <svg
+                      width={pageWidthPx}
+                      height={pageHeightPx}
+                      style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 0 }}
+                    >
+                      <defs>
+                        <pattern id="grid-minor" width={GRID_MINOR} height={GRID_MINOR} patternUnits="userSpaceOnUse">
+                          <path d={`M ${GRID_MINOR} 0 L 0 0 0 ${GRID_MINOR}`} fill="none" stroke="#e5e7eb" strokeWidth="0.5" />
+                        </pattern>
+                        <pattern id="grid-major" width={GRID_MAJOR} height={GRID_MAJOR} patternUnits="userSpaceOnUse">
+                          <rect width={GRID_MAJOR} height={GRID_MAJOR} fill="url(#grid-minor)" />
+                          <path d={`M ${GRID_MAJOR} 0 L 0 0 0 ${GRID_MAJOR}`} fill="none" stroke="#d1d5db" strokeWidth="1" />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#grid-major)" />
+                    </svg>
+                  )}
+
                   {isActive ? (
                     <>
-                      {/* Editable nodes on the active page */}
-                      {page.nodes.map(node => (
+                      {/* Editable nodes on the active page — first in array draws on top */}
+                      {page.nodes.map((node, nodeIndex) => (
                         <NodeDragHandle
                           key={node.id}
                           node={node}
@@ -139,6 +189,8 @@ export function PreviewCanvas({
                           liquid={liquid}
                           dataModel={dataModel}
                           isSelected={node.id === selectedNodeId}
+                          snapGrid={showGrid ? GRID_MINOR : undefined}
+                          zIndex={page.nodes.length - nodeIndex}
                           onSelect={() => onSelectNode(node.id)}
                           onUpdate={(patch) => onUpdateNode(node.id, patch)}
                         />
@@ -164,7 +216,7 @@ export function PreviewCanvas({
                           if (col === 0 && row === 0) return null
                           const offsetX = col * pCellW
                           const offsetY = row * pCellH
-                          return page.nodes.map(node => (
+                          return page.nodes.map((node, nodeIndex) => (
                             <NodeMirror
                               key={`${col}-${row}-${node.id}`}
                               node={node}
@@ -172,6 +224,7 @@ export function PreviewCanvas({
                               dataModel={dataModel}
                               offsetX={offsetX}
                               offsetY={offsetY}
+                              zIndex={page.nodes.length - nodeIndex}
                             />
                           ))
                         })
@@ -184,7 +237,7 @@ export function PreviewCanvas({
                         Array.from({ length: pRows }, (_, row) => {
                           const offsetX = col * pCellW
                           const offsetY = row * pCellH
-                          return page.nodes.map(node => (
+                          return page.nodes.map((node, nodeIndex) => (
                             <NodeMirror
                               key={`${col}-${row}-${node.id}`}
                               node={node}
@@ -192,6 +245,7 @@ export function PreviewCanvas({
                               dataModel={dataModel}
                               offsetX={offsetX}
                               offsetY={offsetY}
+                              zIndex={page.nodes.length - nodeIndex}
                             />
                           ))
                         })

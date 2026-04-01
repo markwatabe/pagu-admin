@@ -17,6 +17,17 @@ function extractAsin(url: string): string | null {
   return match?.[1] ?? null;
 }
 
+function extractNameFromUrl(url: string): string | null {
+  try {
+    const pathname = new URL(url).pathname;
+    const slug = pathname.split('/dp/')[0].replace(/^\/+/, '');
+    if (!slug) return null;
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  } catch {
+    return null;
+  }
+}
+
 export function skuRoutes(repoPath: string) {
   const app = new Hono();
   const csvPath = path.join(repoPath, 'config', 'AMAZON_SKUS.csv');
@@ -73,7 +84,7 @@ export function skuRoutes(repoPath: string) {
       return {
         url,
         asin,
-        name: (sku?.name as string) ?? null,
+        name: (sku?.name as string) ?? extractNameFromUrl(url),
         brand: (sku?.brand as string) ?? null,
         latestPrice: latest?.price ?? null,
         latestDate: latest?.date ?? null,

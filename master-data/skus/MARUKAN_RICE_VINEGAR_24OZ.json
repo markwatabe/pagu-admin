@@ -15,6 +15,16 @@
         {
             "price": 27.99,
             "date": "2026-03-30"
+        },
+        {
+            "price": 27.99,
+            "date": "2026-03-31",
+            "rating": 4.8,
+            "reviewCount": 3346,
+            "isPrime": false
         }
-    ]
+    ],
+    "dimensions": "11.65 x 5.94 x 5.91 inches; 8.25 Pounds",
+    "upc": "3.99 Kilograms",
+    "manufacturer": "Marukan"
 }

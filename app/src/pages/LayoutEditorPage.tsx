@@ -4,6 +4,7 @@ import { db } from '../lib/db';
 import { Spinner } from '../components/Spinner';
 import { PrintLayoutEditor } from '../components/print-layout/PrintLayoutEditor';
 import type { PrintLayoutState, PageLayout } from '../components/print-layout/types';
+import '../styles/menu-print.css';
 
 const SECTION_TO_KEY: Record<string, string> = {
   'Chilled':          'chilled',
@@ -49,6 +50,7 @@ interface MenuSummary {
 
 /** Menu picker — shown at /menu */
 export function LayoutEditorPickerPage() {
+  const { orgId } = useParams();
   const [menus, setMenus] = useState<MenuSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -77,7 +79,7 @@ export function LayoutEditorPickerPage() {
           <button
             key={menu.id}
             type="button"
-            onClick={() => navigate(`/menu/${menu.id}`)}
+            onClick={() => navigate(`/${orgId}/menu/${menu.id}`)}
             className="flex w-full items-center justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
           >
             <span className="font-semibold text-gray-900">{menu.name}</span>
@@ -94,7 +96,7 @@ export function LayoutEditorPickerPage() {
 
 /** Layout editor for a specific menu — shown at /menu/:id */
 export function LayoutEditorPage() {
-  const { id } = useParams<{ id: string }>();
+  const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const [menuTemplate, setMenuTemplate] = useState<MenuTemplate | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -148,6 +150,7 @@ export function LayoutEditorPage() {
           subdivision: page.subdivision,
           nodes: page.nodes.map((n) => ({
             id: n.id,
+            nodeType: n.nodeType ?? 'generic',
             x: n.x,
             y: n.y,
             width: n.width,
@@ -155,6 +158,7 @@ export function LayoutEditorPage() {
             style: n.style ?? {},
             template: n.template,
             query: n.query,
+            ...(n.src ? { src: n.src } : {}),
           })),
         })),
       };
@@ -193,7 +197,7 @@ export function LayoutEditorPage() {
       setShowPrintWarning(true);
       return;
     }
-    const w = window.open(`/menu-render-print/${id}`, '_blank');
+    const w = window.open(`/${orgId}/menu-render-print/${id}`, '_blank');
     w?.addEventListener('load', () => {
       setTimeout(() => w.print(), 300);
     });
@@ -262,7 +266,7 @@ export function LayoutEditorPage() {
                 onClick={async () => {
                   await handleRevert();
                   setShowPrintWarning(false);
-                  const w = window.open(`/menu-render-print/${id}`, '_blank');
+                  const w = window.open(`/${orgId}/menu-render-print/${id}`, '_blank');
                   w?.addEventListener('load', () => {
                     setTimeout(() => w.print(), 300);
                   });
@@ -276,7 +280,7 @@ export function LayoutEditorPage() {
                 onClick={async () => {
                   await handleSave();
                   setShowPrintWarning(false);
-                  const w = window.open(`/menu-render-print/${id}`, '_blank');
+                  const w = window.open(`/${orgId}/menu-render-print/${id}`, '_blank');
                   w?.addEventListener('load', () => {
                     setTimeout(() => w.print(), 300);
                   });
@@ -295,7 +299,7 @@ export function LayoutEditorPage() {
         onChange={handleChange}
         title={
           <nav className="flex items-center gap-1.5 text-sm">
-            <Link to="/menu" className="text-gray-500 hover:text-indigo-600 transition">Menus</Link>
+            <Link to={`/${orgId}/menu`} className="text-gray-500 hover:text-indigo-600 transition">Menus</Link>
             <span className="text-gray-300">/</span>
             <span className="font-semibold text-gray-700">{menuTemplate.name}</span>
           </nav>

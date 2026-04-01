@@ -54,6 +54,7 @@ export interface UsePrintLayoutReturn extends PrintLayoutState {
   setDataModel: (model: Record<string, unknown>) => void
   setSubdivision: (sub: Subdivision) => void
   setCurrentPageIndex: (index: number) => void
+  reorderNodes: (fromIndex: number, toIndex: number) => void
   addPage: () => void
   removePage: (index: number) => void
 }

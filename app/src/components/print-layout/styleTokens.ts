@@ -74,6 +74,24 @@ export const BG_COLOR_OPTIONS: StyleOption[] = [
   { label: 'Black', value: '#000000' },
 ]
 
+export const GRADIENT_DIRECTION_OPTIONS: StyleOption[] = [
+  { label: '↓', value: 'to bottom' },
+  { label: '→', value: 'to right' },
+  { label: '↘', value: 'to bottom right' },
+  { label: '↗', value: 'to top right' },
+  { label: '↑', value: 'to top' },
+  { label: '←', value: 'to left' },
+]
+
+export const GRADIENT_COLOR_OPTIONS: StyleOption[] = [
+  { label: 'Transparent', value: 'transparent' },
+  { label: '--menu-bg', value: 'var(--menu-bg)' },
+  { label: '--menu-accent', value: 'var(--menu-accent)' },
+  { label: 'White', value: '#ffffff' },
+  { label: 'Black', value: '#000000' },
+  { label: 'Custom', value: '__custom__' },
+]
+
 // ── Spacing ─────────────────────────────────────────────────
 
 export const PADDING_OPTIONS: StyleOption[] = [

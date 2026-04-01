@@ -144,7 +144,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {messages.length === 0 && (
           <p className="text-sm text-gray-400 text-center mt-8">
-            Ask me about ingredients, recipes, or menu items.
+            Ask me about recipes or menu items.
           </p>
         )}
         {messages.map((msg, i) => (
@@ -183,7 +183,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
                 send();
               }
             }}
-            placeholder="Ask about ingredients..."
+            placeholder="Ask about recipes..."
             className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
           />
           <button

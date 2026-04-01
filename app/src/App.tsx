@@ -9,9 +9,8 @@ import { MenuRenderPage } from './pages/MenuRenderPage';
 import { MenuRenderPrintPage } from './pages/MenuRenderPrintPage';
 import { MenuPreviewPage } from './pages/MenuPreviewPage';
 import { LayoutEditorPage, LayoutEditorPickerPage } from './pages/LayoutEditorPage';
-import { IngredientPage } from './pages/IngredientPage';
+import { RecipePage } from './pages/RecipePage';
 import { IngredientsPage } from './pages/IngredientsPage';
-import { RecipesPage } from './pages/RecipesPage';
 import { ChartExamplesPage } from './pages/ChartExamplesPage';
 import { FilesPage } from './pages/FilesPage';
 import { AccountPage } from './pages/AccountPage';
@@ -21,6 +20,7 @@ import { DishPage } from './pages/DishPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlanPage } from './pages/PlanPage';
 import { SkusPage } from './pages/SkusPage';
+import { TableTestPage } from './pages/TableTestPage';
 
 export function App() {
   return (
@@ -39,11 +39,10 @@ export function App() {
               <Route path="reviews" element={<ReviewsPage />} />
               <Route path="menu-ingredients" element={<MenuIngredientsPage />} />
               <Route path="menu-render" element={<MenuRenderPage />} />
-              <Route path="recipes" element={<RecipesPage />} />
+              <Route path="recipes" element={<IngredientsPage />} />
               <Route path="dishes" element={<DishesPage />} />
               <Route path="dishes/:id" element={<DishPage />} />
-              <Route path="ingredients" element={<IngredientsPage />} />
-              <Route path="ingredient/:id" element={<IngredientPage />} />
+              <Route path="recipe/:id" element={<RecipePage />} />
               <Route path="chart-examples" element={<ChartExamplesPage />} />
               <Route path="files" element={<FilesPage />} />
               <Route path="account" element={<AccountPage />} />
@@ -53,6 +52,7 @@ export function App() {
               <Route path="skus" element={<SkusPage />} />
             </Route>
             {/* Full-page views — no AppLayout nav */}
+            <Route path="table-test" element={<TableTestPage />} />
             <Route path="menu-render-print/:id" element={<MenuRenderPrintPage />} />
             <Route path="menu-preview" element={<MenuPreviewPage />} />
             <Route path="menu/:id" element={<LayoutEditorPage />} />

@@ -73,14 +73,19 @@ export function usePrintLayout(
   )
 
   const addNode = useCallback((partial?: Partial<LayoutNode>) => {
-    updateCurrentPage(page => ({
-      ...page,
-      nodes: [
-        ...page.nodes,
-        { ...NODE_DEFAULTS, id: crypto.randomUUID(), ...partial },
-      ],
-    }))
-  }, [updateCurrentPage])
+    const newId = crypto.randomUUID()
+    update(prev => {
+      const page = prev.pages[prev.currentPageIndex]
+      if (!page) return prev
+      const newPage = {
+        ...page,
+        nodes: [...page.nodes, { ...NODE_DEFAULTS, id: newId, ...partial }],
+      }
+      const newPages = [...prev.pages]
+      newPages[prev.currentPageIndex] = newPage
+      return { ...prev, pages: newPages, selectedNodeId: newId }
+    })
+  }, [update])
 
   const removeNode = useCallback((id: string) => {
     update(prev => {
@@ -143,6 +148,16 @@ export function usePrintLayout(
     }))
   }, [update])
 
+  const reorderNodes = useCallback((fromIndex: number, toIndex: number) => {
+    updateCurrentPage(page => {
+      if (fromIndex === toIndex) return page
+      const nodes = [...page.nodes]
+      const [moved] = nodes.splice(fromIndex, 1)
+      nodes.splice(toIndex, 0, moved)
+      return { ...page, nodes }
+    })
+  }, [updateCurrentPage])
+
   const removePage = useCallback((index: number) => {
     update(prev => {
       if (prev.pages.length <= 1) return prev // keep at least one page
@@ -171,6 +186,7 @@ export function usePrintLayout(
     setDataModel,
     setSubdivision,
     setCurrentPageIndex,
+    reorderNodes,
     addPage,
     removePage,
   }

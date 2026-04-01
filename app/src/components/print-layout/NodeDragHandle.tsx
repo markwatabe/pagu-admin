@@ -9,17 +9,23 @@ export { useNodeHtml } from './useNodeHtml'
 
 const MIN_SIZE = 20
 
+function snap(value: number, grid: number): number {
+  return Math.round(value / grid) * grid
+}
+
 interface NodeDragHandleProps {
   node: LayoutNode
   scale: number
   liquid: Liquid
   dataModel: Record<string, unknown>
   isSelected: boolean
+  snapGrid?: number
+  zIndex?: number
   onSelect: () => void
   onUpdate: (patch: Partial<LayoutNode>) => void
 }
 
-export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, onSelect, onUpdate }: NodeDragHandleProps) {
+export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, snapGrid, zIndex, onSelect, onUpdate }: NodeDragHandleProps) {
   const { html, renderError } = useNodeHtml(node, liquid, dataModel)
   const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null)
 
@@ -46,11 +52,14 @@ export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, onS
     const { startX, startY, startW, startH } = resizeRef.current
     const dx = (e.clientX - startX) / scale
     const dy = (e.clientY - startY) / scale
-    onUpdate({
-      width: Math.max(MIN_SIZE, startW + dx),
-      height: Math.max(MIN_SIZE, startH + dy),
-    })
-  }, [scale, onUpdate])
+    let newW = Math.max(MIN_SIZE, startW + dx)
+    let newH = Math.max(MIN_SIZE, startH + dy)
+    if (snapGrid) {
+      newW = Math.max(MIN_SIZE, snap(newW, snapGrid))
+      newH = Math.max(MIN_SIZE, snap(newH, snapGrid))
+    }
+    onUpdate({ width: newW, height: newH })
+  }, [scale, snapGrid, onUpdate])
 
   const handleResizePointerUp = useCallback(() => {
     resizeRef.current = null
@@ -65,7 +74,7 @@ export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, onS
     transform: transform
       ? `translate3d(${transform.x / scale}px, ${transform.y / scale}px, 0)`
       : undefined,
-    zIndex: isDragging ? 1000 : undefined,
+    zIndex: isDragging ? 1000 : zIndex,
   }
 
   function handleClick(e: MouseEvent) {
@@ -134,7 +143,7 @@ export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, onS
             {renderError}
           </pre>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: html }} />
+          <div style={{ height: '100%', width: '100%' }} dangerouslySetInnerHTML={{ __html: html }} />
         )}
       </div>
     </div>

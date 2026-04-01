@@ -14,10 +14,10 @@ describe('gitCommit', () => {
       return {} as any;
     });
 
-    await gitCommit('/data/pagu-db', 'ingredients/NEW.json', 'Add new ingredient');
+    await gitCommit('/data/pagu-db', 'recipes/NEW.json', 'Add new recipe');
 
     expect(mockExecFile).toHaveBeenCalledTimes(2);
-    expect(mockExecFile.mock.calls[0][1]).toEqual(['add', 'ingredients/NEW.json']);
-    expect(mockExecFile.mock.calls[1][1]).toEqual(['commit', '-m', 'Add new ingredient']);
+    expect(mockExecFile.mock.calls[0][1]).toEqual(['add', 'recipes/NEW.json']);
+    expect(mockExecFile.mock.calls[1][1]).toEqual(['commit', '-m', 'Add new recipe']);
   });
 });

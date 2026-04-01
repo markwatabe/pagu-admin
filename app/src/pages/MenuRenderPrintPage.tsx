@@ -34,7 +34,7 @@ interface MenuTemplate {
   pages: MenuPageJson[];
 }
 
-function PrintNode({ node, liquid, dataModel }: { node: LayoutNode; liquid: Liquid; dataModel: Record<string, unknown> }) {
+function PrintNode({ node, liquid, dataModel, zIndex }: { node: LayoutNode; liquid: Liquid; dataModel: Record<string, unknown>; zIndex?: number }) {
   const [html, setHtml] = useState('');
 
   useEffect(() => {
@@ -43,6 +43,15 @@ function PrintNode({ node, liquid, dataModel }: { node: LayoutNode; liquid: Liqu
 
     async function render() {
       try {
+        // Image nodes render as a simple <img> tag — no Liquid needed
+        if (node.nodeType === 'image') {
+          const result = node.src
+            ? `<img src="${node.src}" style="width:100%;height:100%;object-fit:contain;" />`
+            : '';
+          if (!cancelled) setHtml(result);
+          return;
+        }
+
         let result: string;
         if (Array.isArray(items)) {
           const parts = await Promise.all(
@@ -72,6 +81,7 @@ function PrintNode({ node, liquid, dataModel }: { node: LayoutNode; liquid: Liqu
         top: node.y,
         width: node.width,
         height: node.height,
+        zIndex,
       }}
     >
       <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...(node.style ?? {}) }}>
@@ -82,7 +92,7 @@ function PrintNode({ node, liquid, dataModel }: { node: LayoutNode; liquid: Liqu
 }
 
 export function MenuRenderPrintPage() {
-  const { id } = useParams<{ id: string }>();
+  const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const [menuTemplate, setMenuTemplate] = useState<MenuTemplate | null>(null);
   const [designTokens, setDesignTokens] = useState<DesignTokens>({});
   const [error, setError] = useState<string | null>(null);
@@ -151,8 +161,9 @@ export function MenuRenderPrintPage() {
         }
         @media print {
           .no-print { display: none !important; }
-          body { background: white; }
+          body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .print-page { box-sizing: border-box; width: ${menuTemplate.pageWidth}mm; height: ${menuTemplate.pageHeight}mm; margin: 0; break-after: page; overflow: hidden; }
+          img { display: block !important; visibility: visible !important; }
           .print-page:last-child { break-after: auto; }
         }
       `}</style>
@@ -160,7 +171,7 @@ export function MenuRenderPrintPage() {
       <div className="no-print">
         <span>
           Print preview &mdash; {menuTemplate.name} ({menuTemplate.pages.length} {menuTemplate.pages.length === 1 ? 'page' : 'pages'}) &nbsp;·&nbsp;
-          <Link to={`/menu/${menuTemplate.id}`} style={{ color: '#4f46e5' }}>back to editor</Link>
+          <Link to={`/${orgId}/menu/${menuTemplate.id}`} style={{ color: '#4f46e5' }}>back to editor</Link>
         </span>
         <button
           type="button"
@@ -186,12 +197,13 @@ export function MenuRenderPrintPage() {
               Array.from({ length: rows }, (_, row) => {
                 const offsetX = col * cellWidthPx;
                 const offsetY = row * cellHeightPx;
-                return page.nodes.map((node) => (
+                return page.nodes.map((node, nodeIndex) => (
                   <PrintNode
                     key={`${pageIndex}-${col}-${row}-${node.id}`}
                     node={{ ...node, x: node.x + offsetX, y: node.y + offsetY }}
                     liquid={liquid}
                     dataModel={dataModel}
+                    zIndex={page.nodes.length - nodeIndex}
                   />
                 ));
               })

@@ -24,7 +24,9 @@ export function FilesPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [replacing, setReplacing] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
   const files = (data?.$files ?? []).map((f) => {
     const raw = f.uploadedBy;
@@ -135,8 +137,79 @@ export function FilesPage() {
     }
   }
 
+  async function handleReplace(fileId: string, oldUrl: string, oldPath: string) {
+    const input = replaceInputRef.current;
+    if (!input) return;
+
+    // Trigger file picker
+    input.onchange = async (e) => {
+      const newFile = (e.target as HTMLInputElement).files?.[0];
+      if (!newFile) return;
+      if (!newFile.type.startsWith('image/')) {
+        setUploadError('Please select an image file.');
+        return;
+      }
+
+      setReplacing(fileId);
+      setUploadError(null);
+
+      try {
+        // Upload new file
+        const newPath = `images/${Date.now()}-${newFile.name}`;
+        await db.storage.upload(newPath, newFile);
+
+        // Get new file record and URL
+        const result = await db.queryOnce({ $files: { $: { where: { path: newPath } } } });
+        const newRecord = result.data.$files[0];
+        if (!newRecord?.url) throw new Error('Upload succeeded but could not find new file URL');
+
+        // Get image dimensions
+        const dims = await new Promise<{ width: number; height: number }>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+          img.onerror = () => resolve({ width: 0, height: 0 });
+          img.src = URL.createObjectURL(newFile);
+        });
+
+        // Update new file record with metadata from old file
+        const oldFile = files.find((f) => f.id === fileId);
+        await db.transact([
+          db.tx.$files[newRecord.id].update({
+            name: oldFile?.name || newFile.name,
+            created_at: Date.now(),
+            ...(dims.width > 0 && { width: dims.width, height: dims.height }),
+          }),
+          ...(user ? [db.tx.$files[newRecord.id].link({ uploadedBy: user.id })] : []),
+        ]);
+
+        // Replace URL in all menu layouts on the server
+        await fetch('/api/files/replace-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldUrl, newUrl: newRecord.url }),
+        });
+
+        // Delete the old file
+        if (oldPath) {
+          await db.storage.delete(oldPath);
+        } else {
+          await db.transact([db.tx.$files[fileId].delete()]);
+        }
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : 'Replace failed.');
+      } finally {
+        setReplacing(null);
+        input.value = '';
+      }
+    };
+
+    input.click();
+  }
+
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
+      {/* Hidden input for replace file picker */}
+      <input ref={replaceInputRef} type="file" accept="image/*" className="hidden" />
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Files</h1>
       </div>
@@ -221,35 +294,41 @@ export function FilesPage() {
           {view === 'cards' ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {files.map((file) => (
-                <a
+                <div
                   key={file.id}
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                  className="group relative rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
                 >
-                  <div className="flex h-36 items-center justify-center overflow-hidden rounded-lg bg-gray-50">
-                    {isImage(file.path) ? (
-                      <img
-                        src={file.url}
-                        alt={file.path}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-10 w-10 text-gray-400"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                          clipRule="evenodd"
+                  <a href={file.url} target="_blank" rel="noopener noreferrer">
+                    <div className="flex h-36 items-center justify-center overflow-hidden rounded-lg bg-gray-50">
+                      {isImage(file.path) ? (
+                        <img
+                          src={file.url}
+                          alt={file.path}
+                          className="h-full w-full object-contain"
                         />
-                      </svg>
-                    )}
-                  </div>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-10 w-10 text-gray-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </a>
+                  <button
+                    onClick={() => handleReplace(file.id, file.url, file.path)}
+                    disabled={replacing === file.id}
+                    className="absolute right-2 top-2 hidden rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-600 shadow-sm backdrop-blur transition hover:bg-white group-hover:block disabled:opacity-50"
+                  >
+                    {replacing === file.id ? 'Replacing...' : 'Replace'}
+                  </button>
                   <p className="mt-2 truncate text-sm font-medium text-gray-700 group-hover:text-indigo-600">
                     {file.name || file.path?.split('/').pop() || 'Untitled'}
                   </p>
@@ -271,7 +350,7 @@ export function FilesPage() {
                       </p>
                     </div>
                   )}
-                </a>
+                </div>
               ))}
             </div>
           ) : (
@@ -292,6 +371,7 @@ export function FilesPage() {
                     <th className="px-6 py-4">Dimensions</th>
                     <th className="px-6 py-4">Uploaded by</th>
                     <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -359,6 +439,15 @@ export function FilesPage() {
                               month: 'short', day: 'numeric', year: 'numeric',
                             })
                           : '—'}
+                      </td>
+                      <td className="px-6 py-3">
+                        <button
+                          onClick={() => handleReplace(file.id, file.url, file.path)}
+                          disabled={replacing === file.id}
+                          className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 transition hover:bg-gray-100 disabled:opacity-50"
+                        >
+                          {replacing === file.id ? 'Replacing...' : 'Replace'}
+                        </button>
                       </td>
                     </tr>
                   ))}

@@ -6,12 +6,13 @@ import { cors } from 'hono/cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
-import { ingredientRoutes } from './routes/ingredients.js';
+import { recipeRoutes } from './routes/recipes.js';
 import { dishRoutes } from './routes/dishes.js';
 import { menuRoutes } from './routes/menus.js';
 import { designTokenRoutes } from './routes/designTokens.js';
 import { chatRoutes } from './routes/chat.js';
 import { skuRoutes } from './routes/skus.js';
+import { fileRoutes } from './routes/files.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -25,12 +26,13 @@ if (!isProduction) {
   app.use('/api/*', cors({ origin: 'http://localhost:5173' }));
 }
 
-app.route('/api/ingredients', ingredientRoutes(repoPath));
+app.route('/api/recipes', recipeRoutes(repoPath));
 app.route('/api/dishes', dishRoutes(repoPath));
 app.route('/api/menus', menuRoutes(repoPath));
 app.route('/api/design-tokens', designTokenRoutes(repoPath));
 app.route('/api/chat', chatRoutes(repoPath));
 app.route('/api/skus', skuRoutes(repoPath));
+app.route('/api/files', fileRoutes(repoPath));
 
 // In production, serve the built frontend
 if (isProduction) {

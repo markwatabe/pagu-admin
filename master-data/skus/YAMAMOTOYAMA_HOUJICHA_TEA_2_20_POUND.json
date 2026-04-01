@@ -7,6 +7,17 @@
         {
             "price": 34.19,
             "date": "2026-03-30"
+        },
+        {
+            "price": 34.19,
+            "date": "2026-03-31",
+            "rating": 4.5,
+            "reviewCount": 42,
+            "isPrime": false
         }
-    ]
+    ],
+    "brand": "Yamamotoyama",
+    "dimensions": "15.16 x 10.75 x 3.86 inches; 2.2 Pounds",
+    "upc": "2.2 Pounds",
+    "manufacturer": "Yamamotoyama"
 }

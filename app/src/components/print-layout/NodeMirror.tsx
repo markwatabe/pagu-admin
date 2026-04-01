@@ -8,9 +8,10 @@ interface NodeMirrorProps {
   dataModel: Record<string, unknown>
   offsetX: number   // logical px — col * cellWidthPx
   offsetY: number   // logical px — row * cellHeightPx
+  zIndex?: number
 }
 
-export function NodeMirror({ node, liquid, dataModel, offsetX, offsetY }: NodeMirrorProps) {
+export function NodeMirror({ node, liquid, dataModel, offsetX, offsetY, zIndex }: NodeMirrorProps) {
   const { html } = useNodeHtml(node, liquid, dataModel)
   // Render errors are intentionally suppressed in mirror cells — they are
   // already visible on the edit cell (col=0, row=0).
@@ -24,6 +25,7 @@ export function NodeMirror({ node, liquid, dataModel, offsetX, offsetY }: NodeMi
         width: node.width,
         height: node.height,
         pointerEvents: 'none',
+        zIndex,
       }}
     >
       <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...node.style }}>

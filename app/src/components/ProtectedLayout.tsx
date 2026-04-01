@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { db } from '../lib/db';
 import { Spinner } from './Spinner';
@@ -11,6 +12,13 @@ export function ProtectedLayout() {
     user ? { '$users': { $: { where: { id: user.id } } } } : null
   );
   const profile = data?.['$users']?.[0];
+
+  // Stamp created_at the first time we see a profile without one
+  useEffect(() => {
+    if (profile && !profile.created_at) {
+      db.transact([db.tx.$users[profile.id].update({ created_at: Date.now() })]);
+    }
+  }, [profile]);
 
   if (isLoading || (user && profileLoading)) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;

@@ -29,7 +29,7 @@ const _schema = i.schema({
       created_at: i.number().optional(),
       type: i.string().optional(),
     }),
-    ingredients: i.entity({
+    recipes: i.entity({
       name: i.string().optional(),
     }),
     measuredIngredients: i.entity({
@@ -198,7 +198,7 @@ const _schema = i.schema({
         label: "source_ingredient",
       },
       reverse: {
-        on: "ingredients",
+        on: "recipes",
         has: "many",
         label: "measuredIngredients",
       },

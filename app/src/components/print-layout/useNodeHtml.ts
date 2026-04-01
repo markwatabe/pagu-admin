@@ -22,7 +22,10 @@ export function useNodeHtml(
     if (node.nodeType === 'image') {
       const imgHtml = node.src
         ? `<img src="${node.src}" style="width:100%;height:100%;object-fit:contain;" />`
-        : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#9ca3af;font-size:12px;">No image selected</div>'
+        : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:#f3f4f6;border:2px dashed #d1d5db;border-radius:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <span style="margin-top:8px;font-size:11px;font-weight:600;letter-spacing:0.05em;color:#9ca3af;">CHOOSE IMAGE</span>
+          </div>`
       setHtml(imgHtml)
       setRenderError(null)
       return

@@ -212,10 +212,10 @@ const measuredIngredients = [
 // ── Migration ─────────────────────────────────────────────────────────────────
 
 async function migrate() {
-  console.log('Migrating ingredients…');
+  console.log('Migrating recipes…');
   await db.transact(
     ingredients.map((ing) =>
-      db.tx.ingredients[seedId('ing', ing.id)].update({ name: ing.name })
+      db.tx.recipes[seedId('ing', ing.id)].update({ name: ing.name })
     )
   );
 

@@ -4,9 +4,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { AGENT_TOOLS, executeToolCall } from '../lib/agent-tools.js';
 
 const SYSTEM_PROMPT = `You are Pagu Assistant, an AI helper for the Pagu restaurant admin dashboard.
-You help manage ingredients in the restaurant's database. You can list, read, and create/update ingredient files.
-Each ingredient is a JSON file with fields: id, production_type, type, unit, and optionally ingredients (for recipes), instructions, directions, equipment.
-Be concise and helpful. When creating ingredients, follow the existing JSON format.`;
+You help manage recipes in the restaurant's database. You can list, read, and create/update recipe files.
+Each recipe is a JSON file with fields: id, production_type, type, unit, and optionally ingredients (for sub-recipes), instructions, directions, equipment.
+Be concise and helpful. When creating recipes, follow the existing JSON format.`;
 
 const MAX_AGENT_ITERATIONS = 10;
 

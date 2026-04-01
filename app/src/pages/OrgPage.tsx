@@ -208,7 +208,7 @@ function UsersTable() {
   if (error) return <p className="text-red-600">Error: {error.message}</p>;
 
   const users = [...(data?.['$users'] ?? [])].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    (a, b) => (a.created_at ?? 0) - (b.created_at ?? 0)
   );
 
   return (
@@ -238,9 +238,11 @@ function UsersTable() {
                 </div>
               </td>
               <td className="px-6 py-4 text-gray-400">
-                {new Date(user.created_at).toLocaleDateString('en-US', {
-                  month: 'short', day: 'numeric', year: 'numeric',
-                })}
+                {user.created_at
+                  ? new Date(user.created_at).toLocaleDateString('en-US', {
+                      month: 'short', day: 'numeric', year: 'numeric',
+                    })
+                  : '—'}
               </td>
             </tr>
           ))}

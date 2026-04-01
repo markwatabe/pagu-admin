@@ -1,15 +1,19 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { db } from '../../lib/db'
 import { NAMED_QUERIES } from './queries'
 import {
   FONT_SIZE_OPTIONS, FONT_WEIGHT_OPTIONS, TEXT_ALIGN_OPTIONS, TEXT_COLOR_OPTIONS,
   TEXT_TRANSFORM_OPTIONS, LETTER_SPACING_OPTIONS, LINE_HEIGHT_OPTIONS,
-  BG_COLOR_OPTIONS, PADDING_OPTIONS, BORDER_BOTTOM_OPTIONS,
+  BG_COLOR_OPTIONS, GRADIENT_DIRECTION_OPTIONS, GRADIENT_COLOR_OPTIONS,
+  PADDING_OPTIONS, BORDER_BOTTOM_OPTIONS,
   getStyleValue, applyStyle,
 } from './styleTokens'
 import type { StyleOption } from './styleTokens'
 import type { LayoutNode } from './types'
 import type { DesignTokens } from './useDesignTokens'
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '../ui/select'
 
 interface StyleEditorProps {
   node: LayoutNode | null
@@ -23,6 +27,17 @@ interface StyleEditorProps {
   onTokensSave?: () => void
   tokensDirty?: boolean
   tokensSaving?: boolean
+}
+
+/** Inline color swatch — CSS resolves var() tokens at render time via inherited custom properties. */
+function ColorSwatch({ color }: { color: string }) {
+  if (!color || color === 'transparent' || color === '__custom__') return null
+  return (
+    <span
+      className="inline-block size-3 shrink-0 rounded-full border border-gray-300"
+      style={{ backgroundColor: color }}
+    />
+  )
 }
 
 function schemaKeys(obj: unknown, prefix: string): string[] {
@@ -108,7 +123,7 @@ function ButtonPicker({ options, value, onChange, renderLabel }: {
   options: readonly StyleOption[]
   value: string | undefined
   onChange: (value: string) => void
-  renderLabel: (option: StyleOption) => string
+  renderLabel: (option: StyleOption) => ReactNode
 }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -116,7 +131,7 @@ function ButtonPicker({ options, value, onChange, renderLabel }: {
         <button
           key={o.value}
           onClick={() => onChange(value === o.value ? '' : o.value)}
-          className={`rounded px-1.5 py-0.5 text-xs border ${
+          className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs border ${
             value === o.value
               ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
               : 'border-gray-200 text-gray-500 hover:border-gray-400'
@@ -236,6 +251,248 @@ function DesignTokensEditor({
         Use in templates: <code className="bg-gray-100 px-1 rounded">var(--name)</code>
       </div>
     </div>
+  )
+}
+
+// ── Gradient helpers ────────────────────────────────────────
+
+/** Parse a `linear-gradient(direction, color1, color2)` string into parts. */
+function parseGradient(bg: string | undefined): { direction: string; from: string; to: string } | null {
+  if (!bg) return null
+  const m = bg.match(/^linear-gradient\(\s*(.+?)\s*,\s*(.+?)\s*,\s*(.+?)\s*\)$/)
+  if (!m) return null
+  return { direction: m[1], from: m[2], to: m[3] }
+}
+
+function buildGradient(direction: string, from: string, to: string): string {
+  return `linear-gradient(${direction}, ${from}, ${to})`
+}
+
+/** Reusable gradient color stop picker with Select dropdown + custom hex input. */
+/** Parse a CSS color into { hex, opacity } where hex is 6-digit and opacity is 0–1. */
+function parseColor(color: string): { hex: string; opacity: number } {
+  // rgba(r, g, b, a)
+  const rgbaMatch = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/)
+  if (rgbaMatch) {
+    const r = Number(rgbaMatch[1])
+    const g = Number(rgbaMatch[2])
+    const b = Number(rgbaMatch[3])
+    const a = rgbaMatch[4] !== undefined ? Number(rgbaMatch[4]) : 1
+    const hex = `#${[r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')}`
+    return { hex, opacity: a }
+  }
+  // 8-digit hex: #rrggbbaa
+  if (/^#[0-9a-fA-F]{8}$/.test(color)) {
+    return { hex: color.slice(0, 7), opacity: parseInt(color.slice(7), 16) / 255 }
+  }
+  // 6-digit hex or fallback
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    return { hex: color, opacity: 1 }
+  }
+  return { hex: color, opacity: 1 }
+}
+
+function buildRgba(hex: string, opacity: number): string {
+  if (opacity >= 1 && /^#[0-9a-fA-F]{6}$/.test(hex)) return hex
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${parseFloat(opacity.toFixed(2))})`
+}
+
+function GradientColorPicker({ label, value, customValue, onSelect, onCustomChange }: {
+  label: string
+  value: string
+  customValue: string
+  onSelect: (value: string) => void
+  onCustomChange: (color: string) => void
+}) {
+  const isCustom = value === '__custom__' || !GRADIENT_COLOR_OPTIONS.some(o => o.value !== '__custom__' && o.value === value)
+  const displayValue = isCustom ? '__custom__' : value
+  const { hex: parsedHex, opacity: parsedOpacity } = parseColor(customValue)
+  const displayLabel = isCustom
+    ? customValue
+    : GRADIENT_COLOR_OPTIONS.find(o => o.value === value)?.label ?? value
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <span className="w-12 shrink-0 text-xs text-gray-500">{label}</span>
+        <Select
+          value={displayValue}
+          onValueChange={v => {
+            if (v === '__custom__') onSelect('__custom__')
+            else onSelect(v)
+          }}
+        >
+          <SelectTrigger size="sm" className="flex-1 text-xs">
+            <SelectValue>
+              <ColorSwatch color={isCustom ? customValue : value} />
+              {displayLabel}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {GRADIENT_COLOR_OPTIONS.map(o => (
+              <SelectItem key={o.value} value={o.value}>
+                <ColorSwatch color={o.value === '__custom__' ? customValue : o.value} />
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {isCustom && (
+        <div className="space-y-1.5 pl-12">
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={parsedHex}
+              onChange={e => onCustomChange(buildRgba(e.target.value, parsedOpacity))}
+              className="h-6 w-6 cursor-pointer rounded border border-gray-200 p-0"
+            />
+            <input
+              type="text"
+              value={customValue}
+              onChange={e => onCustomChange(e.target.value)}
+              className="flex-1 rounded border border-gray-200 px-1.5 py-0.5 text-xs font-mono"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400 w-8">Opacity</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={parsedOpacity}
+              onChange={e => onCustomChange(buildRgba(parsedHex, Number(e.target.value)))}
+              className="flex-1"
+            />
+            <span className="text-[10px] text-gray-500 w-8 text-right">{Math.round(parsedOpacity * 100)}%</span>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+function BackgroundSection({ nodeStyle, onUpdateStyle }: {
+  nodeStyle: Record<string, string>
+  onUpdateStyle: (style: Record<string, string>) => void
+}) {
+  function updateStyle(prop: string, value: string) {
+    onUpdateStyle(applyStyle(nodeStyle, prop, value))
+  }
+  /** Set multiple style props atomically. */
+  function updateStyles(changes: Record<string, string>) {
+    let s = { ...nodeStyle }
+    for (const [prop, value] of Object.entries(changes)) {
+      s = applyStyle(s, prop, value)
+    }
+    onUpdateStyle(s)
+  }
+  const bgValue = getStyleValue(nodeStyle, 'background') ?? ''
+  const gradient = parseGradient(bgValue)
+  const [useGradient, setUseGradient] = useState(!!gradient)
+  const [gradDir, setGradDir] = useState(gradient?.direction ?? 'to bottom')
+  const [gradFrom, setGradFrom] = useState(gradient?.from ?? '#ffffff')
+  const [gradTo, setGradTo] = useState(gradient?.to ?? '#000000')
+  const [customFrom, setCustomFrom] = useState(
+    gradient && !GRADIENT_COLOR_OPTIONS.some(o => o.value === gradient.from) ? gradient.from : '#888888'
+  )
+  const [customTo, setCustomTo] = useState(
+    gradient && !GRADIENT_COLOR_OPTIONS.some(o => o.value === gradient.to) ? gradient.to : '#888888'
+  )
+
+  function applyGradient(dir: string, from: string, to: string) {
+    const resolvedFrom = from === '__custom__' ? customFrom : from
+    const resolvedTo = to === '__custom__' ? customTo : to
+    updateStyles({ background: buildGradient(dir, resolvedFrom, resolvedTo), backgroundColor: '' })
+  }
+
+  function handleToggleGradient(on: boolean) {
+    setUseGradient(on)
+    if (on) {
+      applyGradient(gradDir, gradFrom, gradTo)
+    } else {
+      updateStyles({ background: '' })
+    }
+  }
+
+  return (
+    <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Background</p>
+
+      {/* Solid color */}
+      <div className="flex items-center gap-2">
+        <span className="w-14 shrink-0 text-xs text-gray-500">Color</span>
+        <ButtonPicker
+          options={BG_COLOR_OPTIONS}
+          value={useGradient ? undefined : getStyleValue(nodeStyle, 'backgroundColor')}
+          onChange={v => {
+            setUseGradient(false)
+            updateStyles({ background: '', backgroundColor: v })
+          }}
+          renderLabel={o => <><ColorSwatch color={o.value} /> {o.label}</>}
+        />
+      </div>
+
+      {/* Gradient toggle */}
+      <div className="flex items-center gap-2">
+        <span className="w-14 shrink-0 text-xs text-gray-500">Gradient</span>
+        <button
+          type="button"
+          onClick={() => handleToggleGradient(!useGradient)}
+          className={`rounded px-2 py-0.5 text-xs border ${
+            useGradient
+              ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+              : 'border-gray-200 text-gray-500 hover:border-gray-400'
+          }`}
+        >
+          {useGradient ? 'On' : 'Off'}
+        </button>
+      </div>
+
+      {/* Gradient controls */}
+      {useGradient && (
+        <div className="space-y-2 pl-2 border-l-2 border-indigo-100">
+          {/* Direction */}
+          <div className="flex items-center gap-2">
+            <span className="w-12 shrink-0 text-xs text-gray-500">Dir</span>
+            <Select value={gradDir} onValueChange={v => { setGradDir(v); applyGradient(v, gradFrom, gradTo) }}>
+              <SelectTrigger size="sm" className="flex-1 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GRADIENT_DIRECTION_OPTIONS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label} <span className="text-gray-400 ml-1">{o.value}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* From color */}
+          <GradientColorPicker
+            label="From"
+            value={gradFrom}
+            customValue={customFrom}
+            onSelect={v => { setGradFrom(v); applyGradient(gradDir, v, gradTo) }}
+            onCustomChange={hex => { setCustomFrom(hex); setGradFrom('__custom__'); applyGradient(gradDir, hex, gradTo) }}
+          />
+
+          {/* To color */}
+          <GradientColorPicker
+            label="To"
+            value={gradTo}
+            customValue={customTo}
+            onSelect={v => { setGradTo(v); applyGradient(gradDir, gradFrom, v) }}
+            onCustomChange={hex => { setCustomTo(hex); setGradTo('__custom__'); applyGradient(gradDir, gradFrom, hex) }}
+          />
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -447,7 +704,7 @@ export function StyleEditor({
 
         <div className="flex items-center gap-2">
           <span className="w-14 shrink-0 text-xs text-gray-500">Color</span>
-          <ButtonPicker options={TEXT_COLOR_OPTIONS} value={getStyleValue(nodeStyle, 'color')} onChange={v => updateStyle('color', v)} renderLabel={o => o.label} />
+          <ButtonPicker options={TEXT_COLOR_OPTIONS} value={getStyleValue(nodeStyle, 'color')} onChange={v => updateStyle('color', v)} renderLabel={o => <><ColorSwatch color={o.value} /> {o.label}</>} />
         </div>
 
         <SelectPicker id="text-transform" label="Case" options={TEXT_TRANSFORM_OPTIONS} value={getStyleValue(nodeStyle, 'textTransform')} onChange={v => updateStyle('textTransform', v)} />
@@ -455,15 +712,12 @@ export function StyleEditor({
         <SelectPicker id="line-height" label="Leading" options={LINE_HEIGHT_OPTIONS} value={getStyleValue(nodeStyle, 'lineHeight')} onChange={v => updateStyle('lineHeight', v)} />
       </section>
 
-      {/* Background & Spacing */}
+      {/* Background */}
+      <BackgroundSection nodeStyle={nodeStyle} onUpdateStyle={style => onUpdate({ style })} />
+
+      {/* Spacing */}
       <section className="border-b border-gray-100 px-3 py-3 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Background &amp; Spacing</p>
-
-        <div className="flex items-center gap-2">
-          <span className="w-14 shrink-0 text-xs text-gray-500">Bg</span>
-          <ButtonPicker options={BG_COLOR_OPTIONS} value={getStyleValue(nodeStyle, 'backgroundColor')} onChange={v => updateStyle('backgroundColor', v)} renderLabel={o => o.label} />
-        </div>
-
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Spacing</p>
         <SelectPicker id="padding" label="Padding" options={PADDING_OPTIONS} value={getStyleValue(nodeStyle, 'padding')} onChange={v => updateStyle('padding', v)} />
       </section>
 

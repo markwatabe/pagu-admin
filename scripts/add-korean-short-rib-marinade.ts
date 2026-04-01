@@ -15,7 +15,7 @@ async function run() {
   // ── Cleanup ────────────────────────────────────────────────────────────────
   console.log('Cleaning up previous attempts…');
   const existing = await db.query({
-    ingredients: {},
+    recipes: {},
     measuredIngredients: {},
   });
 
@@ -36,12 +36,12 @@ async function run() {
     'sake', 'soy sauce', 'mirin', 'organic cane sugar', 'rice vinegar',
     'garlic, minced', 'ginger, peeled and minced', 'scallion', 'sesame oil',
   ]);
-  const dupeIngs = existing.ingredients.filter((i: any) =>
+  const dupeIngs = existing.recipes.filter((i: any) =>
     namesToClean.has(i.name)
   );
   if (dupeIngs.length > 0) {
     await db.transact(
-      dupeIngs.map((i: any) => db.tx.ingredients[i.id].delete())
+      dupeIngs.map((i: any) => db.tx.recipes[i.id].delete())
     );
     console.log(`  Deleted ${dupeIngs.length} duplicate ingredients`);
   }
@@ -62,8 +62,8 @@ async function run() {
 
   console.log(`\nCreating marinade ingredient (${marinadeId})…`);
   await db.transact([
-    db.tx.ingredients[marinadeId].update({ name: 'korean short rib marinade' }),
-    ...subs.map((s) => db.tx.ingredients[s.ingId].update({ name: s.name })),
+    db.tx.recipes[marinadeId].update({ name: 'korean short rib marinade' }),
+    ...subs.map((s) => db.tx.recipes[s.ingId].update({ name: s.name })),
   ]);
 
   // ── Create measured ingredients with links ─────────────────────────────────
@@ -91,13 +91,13 @@ async function run() {
 
   // Query the marinade ingredient and follow the reverse source_ingredient link
   const result = await db.query({
-    ingredients: {
+    recipes: {
       $: { where: { id: marinadeId } },
       measuredIngredients: { ingredient: {} },
     },
   });
 
-  const marinade = result.ingredients[0] as any;
+  const marinade = result.recipes[0] as any;
   console.log(`Marinade: ${marinade?.name} (${marinade?.id})`);
   const recipe = marinade?.measuredIngredients ?? [];
   console.log(`Recipe has ${recipe.length} measured ingredients:`);

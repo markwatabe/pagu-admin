@@ -19,7 +19,7 @@ export function RecipesPage() {
   const [view, setView] = useViewToggle();
 
   useEffect(() => {
-    fetch('/api/ingredients')
+    fetch('/api/recipes')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -59,7 +59,7 @@ export function RecipesPage() {
                 <tr key={ing.id} className="transition hover:bg-gray-50">
                   <td className="px-6 py-3 font-medium text-gray-900">
                     <Link
-                      to={`/${orgId}/ingredient/${ing.id}`}
+                      to={`/${orgId}/recipe/${ing.id}`}
                       className="hover:text-indigo-600"
                     >
                       {ing.name}
@@ -80,7 +80,7 @@ export function RecipesPage() {
           {recipes.map((ing) => (
             <Link
               key={ing.id}
-              to={`/${orgId}/ingredient/${ing.id}`}
+              to={`/${orgId}/recipe/${ing.id}`}
               className="group rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
             >
               <span className="block font-semibold text-gray-900 group-hover:text-indigo-600">
