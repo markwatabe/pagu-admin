@@ -79,7 +79,7 @@ export function usePrintLayout(
       if (!page) return prev
       const newPage = {
         ...page,
-        nodes: [...page.nodes, { ...NODE_DEFAULTS, id: newId, ...partial }],
+        nodes: [{ ...NODE_DEFAULTS, id: newId, ...partial }, ...page.nodes],
       }
       const newPages = [...prev.pages]
       newPages[prev.currentPageIndex] = newPage

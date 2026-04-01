@@ -8,23 +8,8 @@
             "subdivision": "full",
             "nodes": [
                 {
-                    "id": "header",
-                    "x": 167.12727864583334,
-                    "y": 808.2405598958334,
-                    "width": 600,
-                    "height": 60,
-                    "style": {
-                        "textAlign": "center",
-                        "fontSize": "var(--menu-header-size)",
-                        "fontWeight": "700",
-                        "letterSpacing": "0.2em",
-                        "textTransform": "uppercase"
-                    },
-                    "template": "{{ restaurant.name }} HI MOM",
-                    "query": null
-                },
-                {
                     "id": "subtitle",
+                    "nodeType": "generic",
                     "x": 20,
                     "y": 80,
                     "width": 600,
@@ -40,10 +25,11 @@
                 },
                 {
                     "id": "all-items",
+                    "nodeType": "generic",
                     "x": 40,
                     "y": 140,
-                    "width": 560,
-                    "height": 30,
+                    "width": 548.046875,
+                    "height": 797.63671875,
                     "style": {
                         "fontSize": "var(--menu-item-size)"
                     },
@@ -51,12 +37,32 @@
                     "query": "all_menu_items"
                 },
                 {
+                    "id": "header",
+                    "nodeType": "generic",
+                    "x": 167.12727864583334,
+                    "y": 808.2405598958334,
+                    "width": 600,
+                    "height": 60,
+                    "style": {
+                        "textAlign": "center",
+                        "fontSize": "var(--menu-header-size)",
+                        "fontWeight": "700",
+                        "letterSpacing": "0.2em",
+                        "textTransform": "uppercase"
+                    },
+                    "template": "{{ restaurant.name }} HI MOM",
+                    "query": null
+                },
+                {
                     "id": "aa9f7b25-1166-4026-92d4-4f1cd53307d9",
-                    "x": 234.453125,
-                    "y": 306.4908854166667,
+                    "nodeType": "generic",
+                    "x": 169.84374999999997,
+                    "y": 618.8932291666666,
                     "width": 306.59505208333337,
                     "height": 268.49609375,
-                    "style": {},
+                    "style": {
+                        "background": "linear-gradient(to bottom, #ffffff, #d60036)"
+                    },
                     "template": "",
                     "query": null
                 }

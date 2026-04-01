@@ -26,6 +26,7 @@ export function NodeMirror({ node, liquid, dataModel, offsetX, offsetY, zIndex }
         height: node.height,
         pointerEvents: 'none',
         zIndex,
+        transform: node.rotation ? `rotate(${node.rotation}deg)` : undefined,
       }}
     >
       <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...node.style }}>

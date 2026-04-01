@@ -82,6 +82,7 @@ function PrintNode({ node, liquid, dataModel, zIndex }: { node: LayoutNode; liqu
         width: node.width,
         height: node.height,
         zIndex,
+        transform: node.rotation ? `rotate(${node.rotation}deg)` : undefined,
       }}
     >
       <div style={{ height: '100%', width: '100%', overflow: 'hidden', ...(node.style ?? {}) }}>

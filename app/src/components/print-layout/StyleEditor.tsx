@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useRef, type ReactNode } from 'react'
 import { db } from '../../lib/db'
+import { uploadImageFile } from '../../lib/upload'
 import { NAMED_QUERIES } from './queries'
 import {
   FONT_SIZE_OPTIONS, FONT_WEIGHT_OPTIONS, TEXT_ALIGN_OPTIONS, TEXT_COLOR_OPTIONS,
@@ -496,6 +497,68 @@ function BackgroundSection({ nodeStyle, onUpdateStyle }: {
   )
 }
 
+function PositionSizeSection({ node, onUpdate }: { node: LayoutNode; onUpdate: (patch: Partial<LayoutNode>) => void }) {
+  const nodeStyle = node.style ?? {}
+  const opacityVal = nodeStyle.opacity ? parseFloat(nodeStyle.opacity) : 1
+
+  return (
+    <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Position &amp; Size</p>
+      <div className="grid grid-cols-2 gap-2">
+        {([ ['x', 'x', node.x], ['y', 'y', node.y], ['w', 'width', node.width], ['h', 'height', node.height] ] as [string, keyof typeof node, number][]).map(([label, key, value]) => (
+          <label key={label} className="flex flex-col gap-0.5">
+            <span className="text-xs text-gray-400 uppercase">{label}</span>
+            <input
+              aria-label={label}
+              type="number"
+              className="rounded border border-gray-200 px-1.5 py-0.5 text-xs"
+              value={value}
+              onChange={e => onUpdate({ [key]: Number(e.target.value) })}
+            />
+          </label>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="rotation" className="w-14 shrink-0 text-xs text-gray-500">Rotate</label>
+        <input
+          id="rotation"
+          aria-label="Rotation"
+          type="number"
+          className="w-16 rounded border border-gray-200 px-1.5 py-0.5 text-xs"
+          value={node.rotation ?? 0}
+          onChange={e => onUpdate({ rotation: Number(e.target.value) })}
+        />
+        <span className="text-[10px] text-gray-400">°</span>
+        <input
+          type="range"
+          min={-180}
+          max={180}
+          step={1}
+          value={node.rotation ?? 0}
+          onChange={e => onUpdate({ rotation: Number(e.target.value) })}
+          className="flex-1"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="w-14 shrink-0 text-xs text-gray-500">Opacity</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={opacityVal}
+          onChange={e => {
+            const v = parseFloat(e.target.value)
+            onUpdate({ style: v >= 1 ? applyStyle(nodeStyle, 'opacity', '') : { ...nodeStyle, opacity: String(v) } })
+          }}
+          className="flex-1"
+        />
+        <span className="w-10 text-right text-[10px] text-gray-400">{Math.round(opacityVal * 100)}%</span>
+      </div>
+    </section>
+  )
+}
+
 const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif'])
 
 function isImageFile(path: string | undefined): boolean {
@@ -504,13 +567,103 @@ function isImageFile(path: string | undefined): boolean {
   return IMAGE_EXTS.has(ext)
 }
 
+const IMAGE_FILTERS = [
+  { key: 'grayscale', label: 'B&W', unit: '%', min: 0, max: 100, step: 1, default: 0 },
+  { key: 'sepia', label: 'Sepia', unit: '%', min: 0, max: 100, step: 1, default: 0 },
+  { key: 'blur', label: 'Blur', unit: 'px', min: 0, max: 20, step: 0.5, default: 0 },
+  { key: 'brightness', label: 'Bright', unit: '%', min: 0, max: 200, step: 1, default: 100 },
+  { key: 'contrast', label: 'Contrast', unit: '%', min: 0, max: 200, step: 1, default: 100 },
+  { key: 'saturate', label: 'Saturate', unit: '%', min: 0, max: 200, step: 1, default: 100 },
+] as const
+
+type FilterKey = typeof IMAGE_FILTERS[number]['key']
+
+/** Parse a CSS filter string like "grayscale(100%) blur(2px)" into a map. */
+function parseFilters(filter: string | undefined): Record<FilterKey, number> {
+  const defaults: Record<string, number> = {}
+  for (const f of IMAGE_FILTERS) defaults[f.key] = f.default
+  if (!filter) return defaults as Record<FilterKey, number>
+  for (const f of IMAGE_FILTERS) {
+    const re = new RegExp(`${f.key}\\(([\\d.]+)`)
+    const m = filter.match(re)
+    if (m) defaults[f.key] = parseFloat(m[1])
+  }
+  return defaults as Record<FilterKey, number>
+}
+
+/** Build a CSS filter string, omitting values at their defaults. */
+function buildFilterString(values: Record<FilterKey, number>): string {
+  const parts: string[] = []
+  for (const f of IMAGE_FILTERS) {
+    const v = values[f.key]
+    if (v !== f.default) {
+      parts.push(`${f.key}(${v}${f.unit})`)
+    }
+  }
+  return parts.join(' ')
+}
+
+function ImageFiltersSection({ node, onUpdate }: {
+  node: LayoutNode
+  onUpdate: (patch: Partial<LayoutNode>) => void
+}) {
+  const nodeStyle = node.style ?? {}
+  const filters = parseFilters(getStyleValue(nodeStyle, 'filter'))
+
+  function setFilter(key: FilterKey, value: number) {
+    const next = { ...filters, [key]: value }
+    const filterStr = buildFilterString(next)
+    onUpdate({ style: filterStr ? { ...nodeStyle, filter: filterStr } : applyStyle(nodeStyle, 'filter', '') })
+  }
+
+  const hasActiveFilters = IMAGE_FILTERS.some(f => filters[f.key] !== f.default)
+
+  return (
+    <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filters</p>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={() => onUpdate({ style: applyStyle(nodeStyle, 'filter', '') })}
+            className="text-[10px] text-red-500 hover:text-red-700"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+      {IMAGE_FILTERS.map(f => (
+        <div key={f.key} className="flex items-center gap-2">
+          <span className="w-14 shrink-0 text-xs text-gray-500">{f.label}</span>
+          <input
+            type="range"
+            min={f.min}
+            max={f.max}
+            step={f.step}
+            value={filters[f.key]}
+            onChange={e => setFilter(f.key, parseFloat(e.target.value))}
+            className="flex-1"
+          />
+          <span className="w-10 text-right text-[10px] text-gray-400">
+            {f.key === 'blur' ? `${filters[f.key]}px` : `${Math.round(filters[f.key])}%`}
+          </span>
+        </div>
+      ))}
+    </section>
+  )
+}
+
 function ImageNodeEditor({ node, onUpdate, onRemove }: {
   node: LayoutNode
   onUpdate: (patch: Partial<LayoutNode>) => void
   onRemove: () => void
 }) {
+  const { user } = db.useAuth()
   const { data } = db.useQuery({ $files: {} })
   const [search, setSearch] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const imageFiles = (data?.$files ?? []).filter(f => isImageFile(f.path))
   const filtered = search
@@ -518,6 +671,27 @@ function ImageNodeEditor({ node, onUpdate, onRemove }: {
         (f.name ?? f.path ?? '').toLowerCase().includes(search.toLowerCase())
       )
     : imageFiles
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file.')
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const result = await uploadImageFile(file, file.name, user?.id)
+      onUpdate({ src: result.url })
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   return (
     <div className="flex flex-col overflow-y-auto text-sm">
@@ -555,6 +729,27 @@ function ImageNodeEditor({ node, onUpdate, onRemove }: {
         ) : (
           <p className="text-xs text-gray-400 italic">No image selected</p>
         )}
+      </section>
+
+      {/* Upload new image */}
+      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Upload New</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="w-full rounded border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 transition hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50"
+        >
+          {uploading ? 'Uploading...' : 'Choose file to upload'}
+        </button>
+        {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
       </section>
 
       {/* File picker */}
@@ -598,24 +793,11 @@ function ImageNodeEditor({ node, onUpdate, onRemove }: {
         </div>
       </section>
 
+      {/* Filters */}
+      <ImageFiltersSection node={node} onUpdate={onUpdate} />
+
       {/* Position & size */}
-      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Position &amp; Size</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([ ['x', 'x', node.x], ['y', 'y', node.y], ['w', 'width', node.width], ['h', 'height', node.height] ] as [string, keyof typeof node, number][]).map(([label, key, value]) => (
-            <label key={label} className="flex flex-col gap-0.5">
-              <span className="text-xs text-gray-400 uppercase">{label}</span>
-              <input
-                aria-label={label}
-                type="number"
-                className="rounded border border-gray-200 px-1.5 py-0.5 text-xs"
-                value={value}
-                onChange={e => onUpdate({ [key]: Number(e.target.value) })}
-              />
-            </label>
-          ))}
-        </div>
-      </section>
+      <PositionSizeSection node={node} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -728,23 +910,7 @@ export function StyleEditor({
       </section>
 
       {/* Position & size */}
-      <section className="border-b border-gray-100 px-3 py-3 space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Position &amp; Size</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([ ['x', 'x', node.x], ['y', 'y', node.y], ['w', 'width', node.width], ['h', 'height', node.height] ] as [string, keyof typeof node, number][]).map(([label, key, value]) => (
-            <label key={label} className="flex flex-col gap-0.5">
-              <span className="text-xs text-gray-400 uppercase">{label}</span>
-              <input
-                aria-label={label}
-                type="number"
-                className="rounded border border-gray-200 px-1.5 py-0.5 text-xs"
-                value={value}
-                onChange={e => onUpdate({ [key]: Number(e.target.value) })}
-              />
-            </label>
-          ))}
-        </div>
-      </section>
+      <PositionSizeSection node={node} onUpdate={onUpdate} />
 
       {/* Template */}
       <section className="flex flex-col flex-1 px-3 py-3 space-y-1">

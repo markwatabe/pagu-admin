@@ -9,6 +9,7 @@ export interface LayoutNode {
   y: number
   width: number
   height: number
+  rotation?: number // degrees, clockwise
   style: Record<string, string>  // CSS properties — values can use var(--token)
   template: string // Liquid template source
   query: string | null // named query key — template renders once per item when set

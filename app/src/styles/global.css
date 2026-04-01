@@ -175,4 +175,7 @@
   html {
     @apply font-sans;
   }
+  .instant-devtool-toggler {
+    display: none !important;
+  }
 }

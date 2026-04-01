@@ -65,6 +65,8 @@ export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, sna
     resizeRef.current = null
   }, [])
 
+  const rotation = node.rotation ?? 0
+  const rotateStr = rotation ? `rotate(${rotation}deg)` : ''
   const style: CSSProperties = {
     position: 'absolute',
     left: node.x,
@@ -72,8 +74,8 @@ export function NodeDragHandle({ node, scale, liquid, dataModel, isSelected, sna
     width: node.width,
     height: node.height,
     transform: transform
-      ? `translate3d(${transform.x / scale}px, ${transform.y / scale}px, 0)`
-      : undefined,
+      ? `translate3d(${transform.x / scale}px, ${transform.y / scale}px, 0) ${rotateStr}`
+      : rotateStr || undefined,
     zIndex: isDragging ? 1000 : zIndex,
   }
 

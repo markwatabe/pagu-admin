@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { db } from '../lib/db';
+import { uploadImageFile } from '../lib/upload';
 import { ClickToEdit } from '../components/ClickToEdit';
 import { ViewToggle, useViewToggle } from '../components/ViewToggle';
 
@@ -62,34 +63,7 @@ export function FilesPage() {
     setUploadError(null);
 
     try {
-      const path = `images/${Date.now()}-${file.name}`;
-
-      // Get image dimensions before uploading
-      const dims = await new Promise<{ width: number; height: number }>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => resolve({ width: 0, height: 0 });
-        img.src = URL.createObjectURL(file);
-      });
-
-      await db.storage.upload(path, file);
-
-      const result = await db.queryOnce({ $files: { $: { where: { path } } } });
-      const fileRecord = result.data.$files[0];
-      if (fileRecord) {
-        const tx: Parameters<typeof db.transact>[0] = [
-          db.tx.$files[fileRecord.id].update({
-            name: name.trim(),
-            created_at: Date.now(),
-            ...(dims.width > 0 && { width: dims.width, height: dims.height }),
-          }),
-        ];
-        if (user) {
-          tx.push(db.tx.$files[fileRecord.id].link({ uploadedBy: user.id }));
-        }
-        await db.transact(tx);
-      }
-
+      await uploadImageFile(file, name, user?.id);
       setFile(null);
       setName('');
       setPreview(null);
