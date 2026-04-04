@@ -1,0 +1,26 @@
+{
+    "id": "CANDIED_PEPITAS",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "garnish",
+    "name": "Candied Pepitas (Pumpkin Seeds)",
+    "ingredients": [
+        [900, "gram", "PUMPKIN_SEEDS_TOASTED"],
+        [300, "gram", "ORGANIC_CANE_SUGAR"]
+    ],
+    "instructions": [
+        "In a medium pot on induction burner on medium heat, add sugar",
+        "Cook for 5-8 minutes until golden and melted. Do not stir, just tilt the pot. Stirring will cause it to crystallize.",
+        "Add the pumpkin seeds into pot, mix with spatula, and then pour onto a parchment paper lining a sheet tray. Use a rubber spatula to remove.",
+        "Allow to cool on parchment or refrigerate to cool completely.",
+        "While the pot is hot, add water to boil it and clean the caramel off. Do not let it cool or it will be difficult to clean.",
+        "Once cool and dry, peel off and move to a Vitamix or food processor to blend until fine",
+        "Label, date, and keep covered, air-tight."
+    ],
+    "equipment": [
+        "induction burner",
+        "medium pot",
+        "sheet tray",
+        "parchment paper",
+        "Vitamix or food processor"
+    ]
+}

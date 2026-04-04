@@ -42,6 +42,7 @@ const _schema = i.schema({
       name: i.string().optional(),
       price: i.number().optional(),
       section: i.string().optional(),
+      components: i.json<string[]>().optional(),
     }),
     orgs: i.entity({
       name: i.string(),
@@ -191,16 +192,16 @@ const _schema = i.schema({
         label: "measuredIngredients",
       },
     },
-    measuredIngredientsSource_ingredient: {
+    menuItemsPhoto: {
       forward: {
-        on: "measuredIngredients",
+        on: "menuItems",
         has: "one",
-        label: "source_ingredient",
+        label: "photo",
       },
       reverse: {
-        on: "recipes",
+        on: "$files",
         has: "many",
-        label: "measuredIngredients",
+        label: "menuItemPhotos",
       },
     },
   },

@@ -13,6 +13,7 @@ import { designTokenRoutes } from './routes/designTokens.js';
 import { chatRoutes } from './routes/chat.js';
 import { skuRoutes } from './routes/skus.js';
 import { fileRoutes } from './routes/files.js';
+import { publicMenuRoutes } from './routes/publicMenu.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -33,6 +34,7 @@ app.route('/api/design-tokens', designTokenRoutes(repoPath));
 app.route('/api/chat', chatRoutes(repoPath));
 app.route('/api/skus', skuRoutes(repoPath));
 app.route('/api/files', fileRoutes(repoPath));
+app.route('/api/public', publicMenuRoutes());
 
 // In production, serve the built frontend
 if (isProduction) {

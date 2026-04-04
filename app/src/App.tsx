@@ -8,6 +8,7 @@ import { MenuIngredientsPage } from './pages/MenuIngredientsPage';
 import { MenuRenderPage } from './pages/MenuRenderPage';
 import { MenuRenderPrintPage } from './pages/MenuRenderPrintPage';
 import { MenuPreviewPage } from './pages/MenuPreviewPage';
+import { PublicMenuPreviewPage } from './pages/PublicMenuPreviewPage';
 import { LayoutEditorPage, LayoutEditorPickerPage } from './pages/LayoutEditorPage';
 import { RecipePage } from './pages/RecipePage';
 import { IngredientsPage } from './pages/IngredientsPage';
@@ -27,6 +28,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/:orgId/menu-preview" element={<PublicMenuPreviewPage />} />
         <Route element={<ProtectedLayout />}>
           {/* Root redirects to first org */}
           <Route index element={<OrgRedirect />} />

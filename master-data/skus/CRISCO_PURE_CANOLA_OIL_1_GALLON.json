@@ -1,0 +1,23 @@
+{
+    "id": "CRISCO_PURE_CANOLA_OIL_1_GALLON",
+    "asin": "B0BF3ZTTDW",
+    "name": "Crisco Pure Canola Oil, 1 Gallon",
+    "url": "https://www.amazon.com/Crisco-Pure-Canola-Oil-Gallon/dp/B0BF3ZTTDW",
+    "prices": [
+        {
+            "price": 10.98,
+            "date": "2026-03-31",
+            "rating": 4.8,
+            "reviewCount": 532,
+            "isPrime": true,
+            "availability": "In Stock",
+            "delivery": "FREE delivery Today"
+        }
+    ],
+    "brand": "Crisco",
+    "quantity": 128,
+    "unit": "Fluid Ounces",
+    "dimensions": ": ‎ 5.48 x 6.19 x 11.6 inches; 7.89 Pounds",
+    "upc": ": ‎ 196005169481",
+    "manufacturer": ": ‎ B&G Foods, Inc"
+}

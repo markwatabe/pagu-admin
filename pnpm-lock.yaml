@@ -141,6 +141,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.0
         version: 1.19.11(hono@4.12.9)
+      '@instantdb/admin':
+        specifier: ^0.22.169
+        version: 0.22.169
       hono:
         specifier: ^4.7.0
         version: 4.12.9

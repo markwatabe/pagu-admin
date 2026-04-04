@@ -1,0 +1,30 @@
+{
+    "id": "ESPUMA_DE_CREMA_CATALANA",
+    "production_type": "IN_HOUSE",
+    "ingredient_type": "dessert",
+    "name": "Espuma de Crema Catalana",
+    "ingredients": [
+        [400, "gram", "HEAVY_CREAM"],
+        [90, "gram", "EGG_YOLK"],
+        [65, "gram", "ORGANIC_CANE_SUGAR"],
+        [1, "piece", "CINNAMON_STICK"],
+        [1, "piece", "ORANGE_PEEL"],
+        [1, "piece", "LEMON_PEEL"]
+    ],
+    "instructions": [
+        "Put all ingredients in a vacuum seal bag",
+        "Cook sous-vide 75C for 45 minutes",
+        "Remove from sous-vide and move to ISI canister. Add 2 gas charges.",
+        "Hold ISI in warm water bath prior to spraying espuma",
+        "Siphon out espuma. Top with additional organic cane sugar. Torch to golden. Serve on top of ice cream, ganache, etc."
+    ],
+    "directions": [
+        "Fill ISI siphon canister with one quart crema catalana and 2 gas charges"
+    ],
+    "equipment": [
+        "vacuum seal bag",
+        "sous-vide",
+        "ISI siphon canister",
+        "torch"
+    ]
+}

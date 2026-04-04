@@ -1,0 +1,22 @@
+{
+    "id": "ARGO_100_PURE_CORN_STARCH_16_OZ_PACK_OF_2",
+    "asin": "B073RTTG92",
+    "name": "Argo 100% Pure Corn Starch, 16 Oz, Pack of 2",
+    "url": "https://www.amazon.com/Argo-Cornstarch/dp/B073RTTG92",
+    "prices": [
+        {
+            "price": 9.97,
+            "date": "2026-03-31",
+            "rating": 4.6,
+            "reviewCount": 1400,
+            "isPrime": true,
+            "availability": "In Stock",
+            "delivery": "FREE delivery Thursday"
+        }
+    ],
+    "brand": "Argo",
+    "quantity": 16,
+    "unit": "Ounce",
+    "dimensions": ": ‎ 7.52 x 5.98 x 3.78 inches; 2.2 Pounds",
+    "manufacturer": ": ‎ ARGO"
+}

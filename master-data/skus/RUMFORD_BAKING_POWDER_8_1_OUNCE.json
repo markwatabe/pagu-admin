@@ -1,0 +1,23 @@
+{
+    "id": "RUMFORD_BAKING_POWDER_8_1_OUNCE",
+    "asin": "B000VK7PG6",
+    "name": "Rumford Baking Powder, 8.1 Ounce",
+    "url": "https://www.amazon.com/Rumford-Baking-Powder/dp/B000VK7PG6",
+    "prices": [
+        {
+            "price": 2.49,
+            "date": "2026-03-31",
+            "rating": 4.8,
+            "reviewCount": 5017,
+            "isPrime": true,
+            "availability": "In Stock",
+            "delivery": "FREE delivery Today"
+        }
+    ],
+    "brand": "Rumford",
+    "quantity": 8.1,
+    "unit": "Ounce",
+    "dimensions": ": ‎ 2.7 x 2.7 x 4 inches; 8.16 ounces",
+    "upc": ": ‎ 041617002254",
+    "manufacturer": ": ‎ Rumford"
+}

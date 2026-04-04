@@ -1,0 +1,22 @@
+{
+    "id": "BOB_S_RED_MILL_GLUTEN_FREE_RICE_FLOUR_1_5_LB",
+    "asin": "B0019GZ7YI",
+    "name": "Bob's Red Mill, Gluten Free Rice Flour, 1.5 lb",
+    "url": "https://www.amazon.com/Bobs-Red-Mill-Rice-Flour/dp/B0019GZ7YI",
+    "prices": [
+        {
+            "price": 9.93,
+            "date": "2026-03-31",
+            "rating": 4.8,
+            "reviewCount": 2212,
+            "isPrime": true,
+            "availability": "In Stock"
+        }
+    ],
+    "brand": "Bob's Red Mill",
+    "quantity": 24,
+    "unit": "Ounce",
+    "dimensions": ": ‎ 2.64 x 4.2 x 8.5 inches; 11 ounces",
+    "upc": ": ‎ 039978003164",
+    "manufacturer": ": ‎ Bob's Red Mill"
+}
