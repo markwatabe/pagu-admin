@@ -110,7 +110,7 @@ export function LayoutEditorPage() {
   const [editorKey, setEditorKey] = useState(0);
   const latestStateRef = useRef<PrintLayoutState | null>(null);
 
-  const { isLoading, error: dbError, data } = db.useQuery({ menuItems: {} });
+  const { isLoading, error: dbError, data } = db.useQuery({ dishes: {} });
 
   // Load the menu template
   useEffect(() => {
@@ -213,8 +213,8 @@ export function LayoutEditorPage() {
   if (dbError) return <div className="p-8 text-red-600">Error: {dbError.message}</div>;
   if (isLoading || !menuTemplate) return <Spinner />;
 
-  // Build data model from menu items
-  const items = [...(data?.menuItems ?? [])]
+  // Build data model from dishes
+  const items = [...(data?.dishes ?? [])]
     .filter((i) => i.available)
     .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''))
     .map((i) => ({
@@ -303,6 +303,7 @@ export function LayoutEditorPage() {
         key={`${menuTemplate.id}-${editorKey}`}
         initialState={initialState}
         onChange={handleChange}
+        qrCodeUrl={`${window.location.origin}/${orgId}/menu-preview/${id}`}
         title={
           <nav className="flex items-center gap-1.5 text-sm">
             <Link to={`/${orgId}/menu`} className="text-gray-500 hover:text-indigo-600 transition">Menus</Link>

@@ -12,7 +12,7 @@ function formatPrice(cents: number) {
 }
 
 export function MenuPreviewPage() {
-  const { isLoading, error, data } = db.useQuery({ menuItems: {} });
+  const { isLoading, error, data } = db.useQuery({ dishes: {} });
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function MenuPreviewPage() {
   if (isLoading) return <Spinner />;
   if (error) return <div style={{ padding: 32, color: 'red' }}>Error: {error.message}</div>;
 
-  const items = [...(data?.menuItems ?? [])]
+  const items = [...(data?.dishes ?? [])]
     .filter((i) => i.available)
     .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''));
   const sections = [...new Set(items.map((i) => i.section))];

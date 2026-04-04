@@ -1,6 +1,6 @@
 export const MM_TO_PX = 96 / 25.4
 
-export type NodeType = 'generic' | 'image'
+export type NodeType = 'generic' | 'image' | 'qrcode'
 
 export interface LayoutNode {
   id: string

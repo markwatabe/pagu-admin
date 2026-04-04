@@ -17,6 +17,7 @@ interface PrintLayoutEditorProps {
   onChange?: (state: PrintLayoutState) => void
   toolbar?: ReactNode
   title?: ReactNode
+  qrCodeUrl?: string
 }
 
 const SUBDIVISION_OPTIONS: { key: Subdivision; label: string; icon: ReactNode }[] = [
@@ -77,9 +78,11 @@ function SortableNodeItem({ node, isSelected, onClick }: {
 
   const label = node.nodeType === 'image'
     ? '🖼 Image'
-    : node.query
-      ? `[${node.query}]`
-      : node.template.replace(/<[^>]*>/g, '').slice(0, 24) || '(empty)'
+    : node.nodeType === 'qrcode'
+      ? '◻ QR Code'
+      : node.query
+        ? `[${node.query}]`
+        : node.template.replace(/<[^>]*>/g, '').slice(0, 24) || '(empty)'
 
   return (
     <button
@@ -109,7 +112,7 @@ function SortableNodeItem({ node, isSelected, onClick }: {
   )
 }
 
-export function PrintLayoutEditor({ initialState, onChange, toolbar, title }: PrintLayoutEditorProps) {
+export function PrintLayoutEditor({ initialState, onChange, toolbar, title, qrCodeUrl }: PrintLayoutEditorProps) {
   const liquid = useMemo(() => new Liquid(), [])
   const [showGrid, setShowGrid] = useState(false)
 
@@ -227,6 +230,13 @@ export function PrintLayoutEditor({ initialState, onChange, toolbar, title }: Pr
           className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
         >
           + Add Image
+        </button>
+
+        <button
+          onClick={() => addNode({ nodeType: 'qrcode', width: 120, height: 120, template: '', src: qrCodeUrl ?? '' })}
+          className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+        >
+          + Add QR Code
         </button>
 
         {toolbar}

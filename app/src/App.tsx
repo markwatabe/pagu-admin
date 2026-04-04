@@ -28,7 +28,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/:orgId/menu-preview" element={<PublicMenuPreviewPage />} />
+        <Route path="/:orgId/menu-preview/:menuId" element={<PublicMenuPreviewPage />} />
         <Route element={<ProtectedLayout />}>
           {/* Root redirects to first org */}
           <Route index element={<OrgRedirect />} />

@@ -3,13 +3,19 @@ import { useParams } from 'react-router-dom';
 import { Spinner } from '../components/Spinner';
 import '../styles/menu-print.css';
 
-interface MenuItem {
+interface Dish {
   id: string;
   name: string;
   description: string | null;
   section: string;
   price: number;
-  photo: string | null;
+  available: boolean;
+}
+
+interface MenuData {
+  id: string;
+  name: string;
+  dishes: Dish[];
 }
 
 function formatPrice(cents: number) {
@@ -17,22 +23,29 @@ function formatPrice(cents: number) {
 }
 
 export function PublicMenuPreviewPage() {
-  const { orgId } = useParams<{ orgId: string }>();
-  const [items, setItems] = useState<MenuItem[] | null>(null);
+  const { menuId } = useParams<{ orgId: string; menuId: string }>();
+  const [menu, setMenu] = useState<MenuData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/public/menu-items')
+    fetch(`/api/menus/${menuId}`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then(setItems)
+      .then(setMenu)
       .catch((e) => setError(e.message));
-  }, []);
+  }, [menuId]);
 
   if (error) return <div style={{ padding: 32, color: 'red' }}>Error: {error}</div>;
-  if (!items) return <Spinner />;
+  if (!menu) return <Spinner />;
+
+  const items = (menu.dishes ?? [])
+    .filter((d) => d.available)
+    .sort((a, b) =>
+      (a.section ?? '').localeCompare(b.section ?? '') ||
+      (a.name ?? '').localeCompare(b.name ?? '')
+    );
 
   const sections = [...new Set(items.map((i) => i.section))];
 

@@ -47,6 +47,16 @@ function PrintNode({ node, liquid, dataModel, zIndex }: { node: LayoutNode; liqu
 
     async function render() {
       try {
+        // QR code nodes render as inline SVG
+        if (node.nodeType === 'qrcode') {
+          if (node.src) {
+            const QRCode = (await import('qrcode')).default;
+            const svg = await QRCode.toString(node.src, { type: 'svg', margin: 0 });
+            if (!cancelled) setHtml(`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${svg}</div>`);
+          }
+          return;
+        }
+
         // Image nodes render as a simple <img> tag — no Liquid needed
         if (node.nodeType === 'image') {
           const result = node.src
@@ -103,7 +113,7 @@ export function MenuRenderPrintPage() {
   const [error, setError] = useState<string | null>(null);
   const liquid = useMemo(() => new Liquid(), []);
 
-  const { isLoading, error: dbError, data } = db.useQuery({ menuItems: {} });
+  const { isLoading, error: dbError, data } = db.useQuery({ dishes: {} });
 
   useEffect(() => {
     if (!id) return;
@@ -127,7 +137,7 @@ export function MenuRenderPrintPage() {
   if (dbError) return <div style={{ padding: 32, color: 'red' }}>Error: {dbError.message}</div>;
   if (isLoading || !menuTemplate) return <Spinner />;
 
-  const items = [...(data?.menuItems ?? [])]
+  const items = [...(data?.dishes ?? [])]
     .filter((i) => i.available)
     .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''))
     .map((i) => ({

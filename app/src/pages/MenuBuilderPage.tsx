@@ -6,12 +6,12 @@ function formatPrice(cents: number) {
 }
 
 export function MenuBuilderPage() {
-  const { isLoading, error, data } = db.useQuery({ menuItems: {} });
+  const { isLoading, error, data } = db.useQuery({ dishes: {} });
 
   if (isLoading) return <Spinner />;
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
 
-  const items = [...(data?.menuItems ?? [])].sort((a, b) =>
+  const items = [...(data?.dishes ?? [])].sort((a, b) =>
     (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? '')
   );
   const sections = [...new Set(items.map((i) => i.section))];

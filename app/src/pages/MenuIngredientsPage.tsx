@@ -7,13 +7,13 @@ function formatPrice(cents: number) {
 
 export function MenuIngredientsPage() {
   const { isLoading, error, data } = db.useQuery({
-    menuItems: { measuredIngredients: { ingredient: {} } },
+    dishes: { components: {} },
   });
 
   if (isLoading) return <Spinner />;
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
 
-  const items = [...(data?.menuItems ?? [])].sort((a, b) =>
+  const items = [...(data?.dishes ?? [])].sort((a, b) =>
     (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? '')
   );
   const sections = [...new Set(items.map((i) => i.section))];
@@ -35,7 +35,7 @@ export function MenuIngredientsPage() {
               <h2 className="mb-4 text-lg font-semibold text-gray-700">{section}</h2>
               <div className="space-y-3">
                 {sectionItems.map((item) => {
-                  const measuredIngredients = item.measuredIngredients ?? [];
+                  const components = item.components ?? [];
                   return (
                     <div key={item.id} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
                       <div className="flex items-baseline justify-between border-b border-gray-50 px-6 py-4">
@@ -50,21 +50,16 @@ export function MenuIngredientsPage() {
                         </span>
                       </div>
                       <div className="px-6 py-3">
-                        {measuredIngredients.length === 0 ? (
-                          <p className="text-sm italic text-gray-400">No ingredients listed</p>
+                        {components.length === 0 ? (
+                          <p className="text-sm italic text-gray-400">No components listed</p>
                         ) : (
                           <ul className="flex flex-wrap gap-2">
-                            {measuredIngredients.map((mi) => (
+                            {components.map((comp: any) => (
                               <li
-                                key={mi.id}
+                                key={comp.id}
                                 className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
                               >
-                                {mi.ingredient?.[0]?.name ?? '—'}
-                                {(mi.amount || mi.unit) && (
-                                  <span className="text-gray-400">
-                                    {mi.amount}{mi.unit ? ` ${mi.unit}` : ''}
-                                  </span>
-                                )}
+                                {comp.name ?? '—'}
                               </li>
                             ))}
                           </ul>

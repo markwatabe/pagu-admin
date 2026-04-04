@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Liquid } from 'liquidjs'
+import QRCode from 'qrcode'
 import type { LayoutNode } from './types'
 
 /**
@@ -18,6 +19,29 @@ export function useNodeHtml(
   const [renderError, setRenderError] = useState<string | null>(null)
 
   useEffect(() => {
+    // QR code nodes render an SVG QR code
+    if (node.nodeType === 'qrcode') {
+      const url = node.src || ''
+      if (!url) {
+        setHtml(`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#f3f4f6;border:2px dashed #d1d5db;border-radius:8px;">
+          <span style="font-size:11px;font-weight:600;color:#9ca3af;">QR CODE</span>
+        </div>`)
+        setRenderError(null)
+        return
+      }
+      QRCode.toString(url, { type: 'svg', margin: 0 })
+        .then((svg) => {
+          if (!cancelled) {
+            setHtml(`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${svg}</div>`)
+            setRenderError(null)
+          }
+        })
+        .catch((err) => {
+          if (!cancelled) setRenderError(String(err))
+        })
+      return
+    }
+
     // Image nodes render as a simple <img> tag — no Liquid needed
     if (node.nodeType === 'image') {
       const imgHtml = node.src
