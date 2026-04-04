@@ -19,6 +19,8 @@ export function useNodeHtml(
   const [renderError, setRenderError] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     // QR code nodes render an SVG QR code
     if (node.nodeType === 'qrcode') {
       const url = node.src || ''
@@ -27,7 +29,7 @@ export function useNodeHtml(
           <span style="font-size:11px;font-weight:600;color:#9ca3af;">QR CODE</span>
         </div>`)
         setRenderError(null)
-        return
+        return () => { cancelled = true }
       }
       QRCode.toString(url, { type: 'svg', margin: 0 })
         .then((svg) => {
@@ -39,7 +41,7 @@ export function useNodeHtml(
         .catch((err) => {
           if (!cancelled) setRenderError(String(err))
         })
-      return
+      return () => { cancelled = true }
     }
 
     // Image nodes render as a simple <img> tag — no Liquid needed
@@ -55,7 +57,6 @@ export function useNodeHtml(
       return
     }
 
-    let cancelled = false
     const items = node.query ? dataModel[node.query] : null
 
     async function render() {
