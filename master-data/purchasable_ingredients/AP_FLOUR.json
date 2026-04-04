@@ -1,9 +1,0 @@
-{
-    "id": "AP_FLOUR",
-    "production_type": "purchasable",
-    "type": "dry",
-    "name": "Ap Flour",
-    "unit": "gram",
-    "sub_ingredients": ["WHEAT"],
-    "allergen": true
-}

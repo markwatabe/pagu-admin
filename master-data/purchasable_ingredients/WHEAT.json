@@ -1,7 +1,0 @@
-{
-    "id": "WHEAT",
-    "production_type": "purchasable",
-    "type": "grain",
-    "unit": "gram",
-    "allergen": true
-}

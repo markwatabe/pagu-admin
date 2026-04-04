@@ -1,7 +1,0 @@
-{
-    "id": "SOYBEANS",
-    "production_type": "purchasable",
-    "type": "legume",
-    "unit": "gram",
-    "allergen": true
-}

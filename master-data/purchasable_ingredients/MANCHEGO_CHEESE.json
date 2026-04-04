@@ -1,8 +1,0 @@
-{
-    "id": "MANCHEGO_CHEESE",
-    "production_type": "purchasable",
-    "type": "dairy",
-    "name": "Manchego Cheese",
-    "unit": "gram",
-    "allergen": true
-}

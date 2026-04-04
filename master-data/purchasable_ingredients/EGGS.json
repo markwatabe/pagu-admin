@@ -1,8 +1,0 @@
-{
-    "id": "EGGS",
-    "production_type": "purchasable",
-    "type": "dairy",
-    "name": "Eggs",
-    "unit": "gram",
-    "allergen": true
-}

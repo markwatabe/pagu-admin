@@ -1,8 +1,0 @@
-{
-    "id": "EGG_YOLK",
-    "production_type": "purchasable",
-    "type": "egg",
-    "name": "Egg Yolk",
-    "unit": "gram",
-    "allergen": true
-}

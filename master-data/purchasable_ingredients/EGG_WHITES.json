@@ -1,8 +1,0 @@
-{
-    "id": "EGG_WHITES",
-    "production_type": "purchasable",
-    "type": "egg",
-    "name": "Egg Whites",
-    "unit": "gram",
-    "allergen": true
-}

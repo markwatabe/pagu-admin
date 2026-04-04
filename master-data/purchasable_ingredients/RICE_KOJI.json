@@ -1,7 +1,0 @@
-{
-    "id": "RICE_KOJI",
-    "production_type": "purchasable",
-    "type": "culture",
-    "unit": "gram",
-    "sub_ingredients": ["RICE"]
-}

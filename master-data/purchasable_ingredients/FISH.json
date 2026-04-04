@@ -1,7 +1,0 @@
-{
-    "id": "FISH",
-    "production_type": "purchasable",
-    "type": "protein",
-    "unit": "gram",
-    "allergen": true
-}

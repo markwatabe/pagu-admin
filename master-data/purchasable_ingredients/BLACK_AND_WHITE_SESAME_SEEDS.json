@@ -1,8 +1,0 @@
-{
-    "id": "BLACK_AND_WHITE_SESAME_SEEDS",
-    "production_type": "purchasable",
-    "type": "dry",
-    "name": "Black And White Sesame Seeds",
-    "unit": "gram",
-    "allergen": true
-}

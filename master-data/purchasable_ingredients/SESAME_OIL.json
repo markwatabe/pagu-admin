@@ -1,8 +1,0 @@
-{
-    "id": "SESAME_OIL",
-    "production_type": "purchasable",
-    "type": "oil",
-    "unit": "gram",
-    "sub_ingredients": ["SESAME_SEEDS"],
-    "allergen": true
-}

@@ -1,7 +1,0 @@
-{
-    "id": "MIRIN",
-    "production_type": "purchasable",
-    "type": "spirit",
-    "unit": "gram",
-    "sub_ingredients": ["RICE", "RICE_KOJI", "SHOCHU"]
-}

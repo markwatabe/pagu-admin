@@ -1,8 +1,0 @@
-{
-    "id": "MISO",
-    "production_type": "purchasable",
-    "type": "paste",
-    "unit": "gram",
-    "sub_ingredients": ["SOYBEANS", "RICE_KOJI", "SALT", "WATER"],
-    "allergen": true
-}
