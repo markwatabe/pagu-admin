@@ -1,53 +1,46 @@
 import { Hono } from 'hono';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+import { db } from '../lib/instantdb.js';
 
-export function menuRoutes(repoPath: string) {
+export function menuRoutes() {
   const app = new Hono();
-  const menusDir = path.join(repoPath, 'menus');
 
-  // GET /api/menus — list all
+  // GET /api/menus — list all menus
   app.get('/', async (c) => {
-    const files = await readdir(menusDir);
-    const jsonFiles = files.filter((f) => f.endsWith('.json'));
-
-    const menus = await Promise.all(
-      jsonFiles.map(async (file) => {
-        const raw = await readFile(path.join(menusDir, file), 'utf-8');
-        const data = JSON.parse(raw);
-        return { id: data.id, name: data.name };
-      })
-    );
-
-    menus.sort((a, b) => a.name.localeCompare(b.name));
-    return c.json(menus);
+    const { menus } = await db.query({ menus: {} });
+    const items = (menus ?? [])
+      .map((m) => ({ id: m.id, name: m.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return c.json(items);
   });
 
   // GET /api/menus/:id — single menu with full layout
   app.get('/:id', async (c) => {
     const id = c.req.param('id');
-    const filePath = path.join(menusDir, `${id}.json`);
+    const { menus } = await db.query({
+      menus: { $: { where: { id } }, dishes: {} },
+    });
 
-    let raw: string;
-    try {
-      raw = await readFile(filePath, 'utf-8');
-    } catch {
-      return c.json({ error: 'Menu not found' }, 404);
-    }
+    const menu = menus?.[0];
+    if (!menu) return c.json({ error: 'Menu not found' }, 404);
 
-    return c.json(JSON.parse(raw));
+    return c.json({
+      id: menu.id,
+      name: menu.name,
+      layout: menu.layout,
+      dishes: menu.dishes ?? [],
+    });
   });
 
   // PUT /api/menus/:id — save layout
   app.put('/:id', async (c) => {
     const id = c.req.param('id');
-    const filePath = path.join(menusDir, `${id}.json`);
-    const body = await c.req.json();
+    const body = await c.req.json<{ name?: string; layout?: unknown }>();
 
-    // Ensure id matches the URL
-    body.id = id;
+    const update: Record<string, unknown> = {};
+    if (body.name !== undefined) update.name = body.name;
+    if (body.layout !== undefined) update.layout = body.layout;
 
-    await writeFile(filePath, JSON.stringify(body, null, 4) + '\n', 'utf-8');
+    await db.transact([db.tx.menus[id].update(update)]);
     return c.json({ ok: true });
   });
 

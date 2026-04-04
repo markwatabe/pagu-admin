@@ -1,26 +1,25 @@
 import { Hono } from 'hono';
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+import { db } from '../lib/instantdb.js';
 
-export function designTokenRoutes(repoPath: string) {
+export function designTokenRoutes() {
   const app = new Hono();
-  const filePath = path.join(repoPath, 'design-tokens.json');
 
-  // GET /api/design-tokens
   app.get('/', async (c) => {
-    let raw: string;
-    try {
-      raw = await readFile(filePath, 'utf-8');
-    } catch {
-      return c.json({});
-    }
-    return c.json(JSON.parse(raw));
+    const { orgs } = await db.query({ orgs: {} });
+    const org = orgs?.[0];
+    return c.json(org?.designTokens ?? {});
   });
 
-  // PUT /api/design-tokens
   app.put('/', async (c) => {
     const body = await c.req.json();
-    await writeFile(filePath, JSON.stringify(body, null, 4) + '\n', 'utf-8');
+    const { orgs } = await db.query({ orgs: {} });
+    const org = orgs?.[0];
+
+    if (!org) {
+      return c.json({ error: 'No org found' }, 404);
+    }
+
+    await db.transact([db.tx.orgs[org.id].update({ designTokens: body })]);
     return c.json({ ok: true });
   });
 

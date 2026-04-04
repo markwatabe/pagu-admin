@@ -4,22 +4,21 @@ import { db } from '../lib/instantdb.js';
 export function publicMenuRoutes() {
   const app = new Hono();
 
-  // Public endpoint — no auth required
   app.get('/menu-items', async (c) => {
-    const result = await db.query({ menuItems: { photo: {} } });
-    const items = (result.menuItems ?? [])
-      .filter((i: any) => i.available)
+    const { dishes } = await db.query({ dishes: { photo: {} } });
+    const items = (dishes ?? [])
+      .filter((d: any) => d.available)
       .sort((a: any, b: any) =>
         (a.section ?? '').localeCompare(b.section ?? '') ||
         (a.name ?? '').localeCompare(b.name ?? '')
       )
-      .map((i: any) => ({
-        id: i.id,
-        name: i.name,
-        description: i.description,
-        section: i.section,
-        price: i.price,
-        photo: Array.isArray(i.photo) ? i.photo[0]?.url ?? null : i.photo?.url ?? null,
+      .map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        description: d.description,
+        section: d.section,
+        price: d.price,
+        photo: Array.isArray(d.photo) ? d.photo[0]?.url ?? null : d.photo?.url ?? null,
       }));
 
     return c.json(items);

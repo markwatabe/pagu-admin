@@ -1,13 +1,11 @@
-import { writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
-import { gitCommit } from './git.js';
-import { getRecipe, listAllRecipes, resolveRecipeDir } from './recipes.js';
+import { db } from './instantdb.js';
+import { id as instantId } from '@instantdb/admin';
 
 export const AGENT_TOOLS: Tool[] = [
   {
-    name: 'list_recipes',
-    description: 'List all recipe/ingredient files in the database',
+    name: 'list_components',
+    description: 'List all components (ingredients and recipe items) in the database',
     input_schema: {
       type: 'object' as const,
       properties: {},
@@ -15,75 +13,100 @@ export const AGENT_TOOLS: Tool[] = [
     },
   },
   {
-    name: 'read_recipe',
-    description: 'Read the full JSON content of a specific recipe/ingredient file',
+    name: 'read_component',
+    description: 'Read a component with its recipes and SKUs',
     input_schema: {
       type: 'object' as const,
       properties: {
-        id: { type: 'string', description: 'Recipe ID (e.g., APPLE_CORED_PEELED)' },
+        id: { type: 'string', description: 'Component UUID' },
       },
       required: ['id'],
     },
   },
   {
-    name: 'write_recipe',
-    description: 'Create or update a recipe JSON file and commit it to the repository',
+    name: 'create_component',
+    description: 'Create a new component with an optional recipe',
     input_schema: {
       type: 'object' as const,
       properties: {
-        id: { type: 'string', description: 'Recipe ID (e.g., NEW_RECIPE)' },
-        content: { type: 'string', description: 'Full JSON content for the recipe file' },
-        message: { type: 'string', description: 'Git commit message describing the change' },
+        name: { type: 'string', description: 'Component name' },
+        type: { type: 'string', description: 'Component type (e.g. sauce, protein, nut)' },
+        allergen: { type: 'boolean', description: 'Whether this is a common allergen' },
+        recipe: {
+          type: 'object',
+          description: 'Optional recipe for this component',
+          properties: {
+            name: { type: 'string' },
+            ingredients: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  qty: { type: 'number' },
+                  unit: { type: 'string' },
+                  componentId: { type: 'string' },
+                },
+              },
+            },
+            instructions: { type: 'array', items: { type: 'string' } },
+            equipment: { type: 'array', items: { type: 'string' } },
+          },
+        },
       },
-      required: ['id', 'content', 'message'],
+      required: ['name'],
     },
   },
 ];
 
-function sanitizeId(id: string): string {
-  const cleaned = path.basename(id).replace(/\.json$/, '');
-  if (!cleaned || cleaned === '.' || cleaned === '..') {
-    throw new Error(`Invalid recipe ID: ${id}`);
-  }
-  return cleaned;
-}
-
 export async function executeToolCall(
-  repoPath: string,
   toolName: string,
-  input: Record<string, string>,
+  input: Record<string, any>,
 ): Promise<string> {
   switch (toolName) {
-    case 'list_recipes': {
-      try {
-        const jsonFiles = await listAllRecipes(repoPath);
-        return JSON.stringify(jsonFiles);
-      } catch (err) {
-        return `Error listing recipes: ${err instanceof Error ? err.message : String(err)}`;
-      }
+    case 'list_components': {
+      const { components } = await db.query({ components: { recipes: {} } });
+      return JSON.stringify(
+        (components ?? []).map((c) => ({
+          id: c.id,
+          name: c.name,
+          type: c.type,
+          hasRecipe: Array.isArray(c.recipes) && c.recipes.length > 0,
+        }))
+      );
     }
-    case 'read_recipe': {
-      try {
-        const safeId = sanitizeId(input.id);
-        const data = await getRecipe(repoPath, safeId);
-        if (!data) return `Recipe not found: ${safeId}`;
-        return JSON.stringify(data, null, 2);
-      } catch (err) {
-        return `Error reading recipe ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
-      }
+    case 'read_component': {
+      const { components } = await db.query({
+        components: { $: { where: { id: input.id } }, recipes: {}, skus: {} },
+      });
+      const comp = components?.[0];
+      if (!comp) return `Component not found: ${input.id}`;
+      return JSON.stringify(comp, null, 2);
     }
-    case 'write_recipe': {
-      try {
-        const safeId = sanitizeId(input.id);
-        const dir = await resolveRecipeDir(repoPath, safeId);
-        const filePath = path.join(dir, `${safeId}.json`);
-        const relPath = path.relative(repoPath, filePath);
-        await writeFile(filePath, input.content, 'utf-8');
-        await gitCommit(repoPath, relPath, input.message);
-        return `Successfully wrote ${relPath} and committed`;
-      } catch (err) {
-        return `Error writing recipe ${input.id}: ${err instanceof Error ? err.message : String(err)}`;
+    case 'create_component': {
+      const compId = instantId();
+      const txns: any[] = [
+        db.tx.components[compId].update({
+          name: input.name,
+          type: input.type ?? null,
+          allergen: input.allergen ?? false,
+        }),
+      ];
+
+      if (input.recipe) {
+        const recipeId = instantId();
+        txns.push(
+          db.tx.recipes[recipeId].update({
+            name: input.recipe.name ?? input.name,
+            ingredients: input.recipe.ingredients ?? [],
+            instructions: input.recipe.instructions ?? [],
+            equipment: input.recipe.equipment ?? [],
+          }),
+          db.tx.recipes[recipeId].link({ component: compId }),
+        );
       }
+
+      await db.transact(txns);
+      return JSON.stringify({ ok: true, id: compId });
     }
     default:
       return `Unknown tool: ${toolName}`;
