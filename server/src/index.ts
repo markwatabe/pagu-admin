@@ -12,14 +12,10 @@ import { menuRoutes } from './routes/menus.js';
 import { designTokenRoutes } from './routes/designTokens.js';
 import { chatRoutes } from './routes/chat.js';
 import { skuRoutes } from './routes/skus.js';
-import { fileRoutes } from './routes/files.js';
 import { publicMenuRoutes } from './routes/publicMenu.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
-const repoPath = process.env.REPO_PATH
-  ? path.resolve(process.env.REPO_PATH)
-  : path.resolve(__dirname, '..', '..', 'master-data');
 
 const app = new Hono();
 
@@ -27,13 +23,12 @@ if (!isProduction) {
   app.use('/api/*', cors({ origin: 'http://localhost:5173' }));
 }
 
-app.route('/api/recipes', recipeRoutes(repoPath));
-app.route('/api/dishes', dishRoutes(repoPath));
-app.route('/api/menus', menuRoutes(repoPath));
-app.route('/api/design-tokens', designTokenRoutes(repoPath));
-app.route('/api/chat', chatRoutes(repoPath));
-app.route('/api/skus', skuRoutes(repoPath));
-app.route('/api/files', fileRoutes(repoPath));
+app.route('/api/recipes', recipeRoutes());
+app.route('/api/dishes', dishRoutes());
+app.route('/api/menus', menuRoutes());
+app.route('/api/design-tokens', designTokenRoutes());
+app.route('/api/chat', chatRoutes());
+app.route('/api/skus', skuRoutes());
 app.route('/api/public', publicMenuRoutes());
 
 // In production, serve the built frontend
