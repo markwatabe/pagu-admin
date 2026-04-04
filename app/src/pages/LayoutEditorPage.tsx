@@ -35,12 +35,16 @@ interface MenuPageJson {
   subdivision: string;
 }
 
-interface MenuTemplate {
-  id: string;
-  name: string;
+interface MenuLayout {
   pageWidth: number;
   pageHeight: number;
   pages: MenuPageJson[];
+}
+
+interface MenuTemplate {
+  id: string;
+  name: string;
+  layout: MenuLayout;
 }
 
 interface MenuSummary {
@@ -144,23 +148,25 @@ export function LayoutEditorPage() {
       const payload: MenuTemplate = {
         id: menuTemplate.id,
         name: menuTemplate.name,
-        pageWidth: state.pageWidth,
-        pageHeight: state.pageHeight,
-        pages: state.pages.map((page) => ({
-          subdivision: page.subdivision,
-          nodes: page.nodes.map((n) => ({
-            id: n.id,
-            nodeType: n.nodeType ?? 'generic',
-            x: n.x,
-            y: n.y,
-            width: n.width,
-            height: n.height,
-            style: n.style ?? {},
-            template: n.template,
-            query: n.query,
-            ...(n.src ? { src: n.src } : {}),
+        layout: {
+          pageWidth: state.pageWidth,
+          pageHeight: state.pageHeight,
+          pages: state.pages.map((page) => ({
+            subdivision: page.subdivision,
+            nodes: page.nodes.map((n) => ({
+              id: n.id,
+              nodeType: n.nodeType ?? 'generic',
+              x: n.x,
+              y: n.y,
+              width: n.width,
+              height: n.height,
+              style: n.style ?? {},
+              template: n.template,
+              query: n.query,
+              ...(n.src ? { src: n.src } : {}),
+            })),
           })),
-        })),
+        },
       };
       const r = await fetch(`/api/menus/${id}`, {
         method: 'PUT',
@@ -232,7 +238,7 @@ export function LayoutEditorPage() {
     ...grouped,
   };
 
-  const pages: PageLayout[] = menuTemplate.pages.map((p) => ({
+  const pages: PageLayout[] = menuTemplate.layout.pages.map((p) => ({
     nodes: p.nodes,
     subdivision: p.subdivision as PageLayout['subdivision'],
   }));
@@ -240,8 +246,8 @@ export function LayoutEditorPage() {
   const initialState: Partial<PrintLayoutState> = {
     dataModel,
     pages,
-    pageWidth: menuTemplate.pageWidth,
-    pageHeight: menuTemplate.pageHeight,
+    pageWidth: menuTemplate.layout.pageWidth,
+    pageHeight: menuTemplate.layout.pageHeight,
   };
 
   return (

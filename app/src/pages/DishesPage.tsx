@@ -4,12 +4,12 @@ import { Spinner } from '../components/Spinner';
 
 export function DishesPage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const { isLoading, error, data } = db.useQuery({ menuItems: { photo: {} } });
+  const { isLoading, error, data } = db.useQuery({ dishes: { photo: {} } });
 
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
   if (isLoading) return <Spinner />;
 
-  const dishes = [...(data?.menuItems ?? [])]
+  const dishes = [...(data?.dishes ?? [])]
     .sort((a, b) => (a.section ?? '').localeCompare(b.section ?? '') || (a.name ?? '').localeCompare(b.name ?? ''));
 
   return (

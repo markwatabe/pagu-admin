@@ -7,10 +7,8 @@ import { Spinner } from '../components/Spinner';
 interface Recipe {
   id: string;
   name: string;
-  production_type: string;
-  ingredient_type?: string;
-  type?: string;
-  unit?: string;
+  type?: string | null;
+  allergen: boolean;
   hasRecipe: boolean;
 }
 
@@ -24,24 +22,7 @@ const columns: ColumnDef<Recipe>[] = [
     ),
   },
   {
-    accessorKey: 'production_type',
-    header: 'Production',
-    size: 140,
-    cell: ({ getValue }) => {
-      const val = getValue<string>();
-      const color =
-        val === 'IN_HOUSE'
-          ? 'bg-green-100 text-green-700'
-          : 'bg-blue-100 text-blue-700';
-      return (
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${color}`}>
-          {val?.replace(/_/g, ' ') ?? '—'}
-        </span>
-      );
-    },
-  },
-  {
-    accessorKey: 'ingredient_type',
+    accessorKey: 'type',
     header: 'Type',
     size: 160,
     cell: ({ getValue }) => (
@@ -49,12 +30,17 @@ const columns: ColumnDef<Recipe>[] = [
     ),
   },
   {
-    accessorKey: 'unit',
-    header: 'Unit',
-    size: 100,
-    cell: ({ getValue }) => (
-      <span className="text-gray-500">{getValue<string>() ?? '—'}</span>
-    ),
+    accessorKey: 'allergen',
+    header: 'Allergen',
+    size: 110,
+    cell: ({ getValue }) =>
+      getValue<boolean>() ? (
+        <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
+          Yes
+        </span>
+      ) : (
+        <span className="text-gray-400">—</span>
+      ),
   },
   {
     accessorKey: 'hasRecipe',

@@ -7,9 +7,9 @@ import { Spinner } from '../components/Spinner';
 interface ComponentInfo {
   id: string;
   name: string;
-  production_type: string;
-  ingredient_type?: string;
   type?: string;
+  allergen?: boolean;
+  hasRecipe?: boolean;
 }
 
 function ComponentPicker({ existingIds, onAdd }: { existingIds: string[]; onAdd: (id: string) => void }) {
@@ -22,7 +22,7 @@ function ComponentPicker({ existingIds, onAdd }: { existingIds: string[]; onAdd:
   useEffect(() => {
     if (!open || allItems.length > 0) return;
     setLoading(true);
-    fetch('/api/recipes/all')
+    fetch('/api/recipes')
       .then((r) => r.json())
       .then(setAllItems)
       .catch(() => {})
@@ -93,14 +93,14 @@ function ComponentPicker({ existingIds, onAdd }: { existingIds: string[]; onAdd:
           >
             <span className="text-sm text-gray-900">{item.name}</span>
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-              item.production_type === 'IN_HOUSE'
+              item.hasRecipe
                 ? 'bg-indigo-50 text-indigo-600'
                 : 'bg-amber-50 text-amber-700'
             }`}>
-              {item.production_type === 'IN_HOUSE' ? 'Recipe' : 'Purchased'}
+              {item.hasRecipe ? 'Recipe' : 'Purchased'}
             </span>
-            {(item.ingredient_type || item.type) && (
-              <span className="text-xs text-gray-400">{item.ingredient_type ?? item.type}</span>
+            {item.type && (
+              <span className="text-xs text-gray-400">{item.type}</span>
             )}
           </button>
         ))}
@@ -117,43 +117,15 @@ export function DishPage() {
   const { orgId, id } = useParams<{ orgId: string; id: string }>();
   const { user } = db.useAuth();
   const { isLoading, error, data } = db.useQuery({
-    menuItems: { $: { where: { id } }, photo: {} },
+    dishes: { $: { where: { id } }, photo: {}, components: {} },
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [components, setComponents] = useState<ComponentInfo[]>([]);
 
-  const dish = data?.menuItems?.[0];
-  const componentIds = (dish?.components ?? []) as string[];
-
-  useEffect(() => {
-    if (componentIds.length === 0) { setComponents([]); return; }
-    let cancelled = false;
-    Promise.all(
-      componentIds.map((cid) =>
-        fetch(`/api/recipes/${cid}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null)
-      )
-    ).then((results) => {
-      if (!cancelled) {
-        setComponents(
-          results
-            .filter(Boolean)
-            .map((r: any) => ({
-              id: r.id,
-              name: r.name ?? r.id.replace(/_/g, ' '),
-              production_type: r.production_type,
-              ingredient_type: r.ingredient_type,
-              type: r.type,
-            }))
-        );
-      }
-    });
-    return () => { cancelled = true; };
-  }, [componentIds.join(',')]);
+  const dish = data?.dishes?.[0];
+  const components = (dish?.components ?? []) as ComponentInfo[];
 
   if (error) return <div className="p-8 text-red-600">Error: {error.message}</div>;
   if (isLoading) return <Spinner />;
@@ -174,7 +146,7 @@ export function DishPage() {
     setUploadError(null);
     try {
       const result = await uploadImageFile(file, `${dish!.name ?? 'dish'} - photo`, user?.id);
-      await db.transact([db.tx.menuItems[id].link({ photo: result.id })]);
+      await db.transact([db.tx.dishes[id!].link({ photo: result.id })]);
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Upload failed.');
     } finally {
@@ -185,17 +157,17 @@ export function DishPage() {
 
   async function handleRemoveImage() {
     if (!id || !linkedPhoto) return;
-    await db.transact([db.tx.menuItems[id].unlink({ photo: linkedPhoto.id })]);
+    await db.transact([db.tx.dishes[id!].unlink({ photo: linkedPhoto.id })]);
   }
 
   function handleAddComponent(componentId: string) {
-    if (!id || componentIds.includes(componentId)) return;
-    db.transact([db.tx.menuItems[id].update({ components: [...componentIds, componentId] })]);
+    if (!id) return;
+    db.transact([db.tx.dishes[id].link({ components: componentId })]);
   }
 
   function handleRemoveComponent(componentId: string) {
     if (!id) return;
-    db.transact([db.tx.menuItems[id].update({ components: componentIds.filter((c) => c !== componentId) })]);
+    db.transact([db.tx.dishes[id].unlink({ components: componentId })]);
   }
 
   return (
@@ -313,14 +285,14 @@ export function DishPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-gray-900">{comp.name}</span>
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      comp.production_type === 'IN_HOUSE'
+                      comp.hasRecipe
                         ? 'bg-indigo-50 text-indigo-600'
                         : 'bg-amber-50 text-amber-700'
                     }`}>
-                      {comp.production_type === 'IN_HOUSE' ? 'Recipe' : 'Purchased'}
+                      {comp.hasRecipe ? 'Recipe' : 'Purchased'}
                     </span>
-                    {(comp.ingredient_type || comp.type) && (
-                      <span className="text-xs text-gray-400">{comp.ingredient_type ?? comp.type}</span>
+                    {comp.type && (
+                      <span className="text-xs text-gray-400">{comp.type}</span>
                     )}
                   </div>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-300">
@@ -342,7 +314,7 @@ export function DishPage() {
           </div>
         )}
         <ComponentPicker
-          existingIds={componentIds}
+          existingIds={components.map((c: any) => c.id)}
           onAdd={handleAddComponent}
         />
       </div>

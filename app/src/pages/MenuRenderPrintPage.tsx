@@ -26,12 +26,16 @@ interface MenuPageJson {
   subdivision: string;
 }
 
-interface MenuTemplate {
-  id: string;
-  name: string;
+interface MenuLayout {
   pageWidth: number;
   pageHeight: number;
   pages: MenuPageJson[];
+}
+
+interface MenuTemplate {
+  id: string;
+  name: string;
+  layout: MenuLayout;
 }
 
 function PrintNode({ node, liquid, dataModel, zIndex }: { node: LayoutNode; liquid: Liquid; dataModel: Record<string, unknown>; zIndex?: number }) {
@@ -147,23 +151,23 @@ export function MenuRenderPrintPage() {
     ...grouped,
   };
 
-  const pageWidthPx = menuTemplate.pageWidth * MM_TO_PX;
-  const pageHeightPx = menuTemplate.pageHeight * MM_TO_PX;
+  const pageWidthPx = menuTemplate.layout.pageWidth * MM_TO_PX;
+  const pageHeightPx = menuTemplate.layout.pageHeight * MM_TO_PX;
 
   return (
     <div style={{ margin: 0, fontFamily: "'Bryant Pro', sans-serif", background: 'white', color: 'black' }}>
       <style>{`
-        @page { size: ${menuTemplate.pageWidth}mm ${menuTemplate.pageHeight}mm; margin: 0; }
+        @page { size: ${menuTemplate.layout.pageWidth}mm ${menuTemplate.layout.pageHeight}mm; margin: 0; }
         body { margin: 0; }
         @media screen {
           body { background: #e5e7eb; }
-          .print-page { box-sizing: border-box; width: ${menuTemplate.pageWidth}mm; max-width: calc(100vw - 32px); margin: 32px auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,.15); border: 1px solid #d1d5db; }
+          .print-page { box-sizing: border-box; width: ${menuTemplate.layout.pageWidth}mm; max-width: calc(100vw - 32px); margin: 32px auto; background: white; box-shadow: 0 4px 24px rgba(0,0,0,.15); border: 1px solid #d1d5db; }
           .no-print { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 10; background: #f3f4f6; padding: 12px 32px; font-size: 13px; color: #4b5563; border-bottom: 1px solid #e5e7eb; }
         }
         @media print {
           .no-print { display: none !important; }
           body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .print-page { box-sizing: border-box; width: ${menuTemplate.pageWidth}mm; height: ${menuTemplate.pageHeight}mm; margin: 0; break-after: page; overflow: hidden; }
+          .print-page { box-sizing: border-box; width: ${menuTemplate.layout.pageWidth}mm; height: ${menuTemplate.layout.pageHeight}mm; margin: 0; break-after: page; overflow: hidden; }
           img { display: block !important; visibility: visible !important; }
           .print-page:last-child { break-after: auto; }
         }
@@ -171,7 +175,7 @@ export function MenuRenderPrintPage() {
 
       <div className="no-print">
         <span>
-          Print preview &mdash; {menuTemplate.name} ({menuTemplate.pages.length} {menuTemplate.pages.length === 1 ? 'page' : 'pages'}) &nbsp;·&nbsp;
+          Print preview &mdash; {menuTemplate.name} ({menuTemplate.layout.pages.length} {menuTemplate.layout.pages.length === 1 ? 'page' : 'pages'}) &nbsp;·&nbsp;
           <Link to={`/${orgId}/menu/${menuTemplate.id}`} style={{ color: '#4f46e5' }}>back to editor</Link>
         </span>
         <button
@@ -183,7 +187,7 @@ export function MenuRenderPrintPage() {
         </button>
       </div>
 
-      {menuTemplate.pages.map((page, pageIndex) => {
+      {menuTemplate.layout.pages.map((page, pageIndex) => {
         const { cols, rows } = subdivisionGrid(page.subdivision as 'full' | 'cols2' | 'rows2' | 'grid4');
         const cellWidthPx = pageWidthPx / cols;
         const cellHeightPx = pageHeightPx / rows;

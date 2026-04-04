@@ -6,9 +6,8 @@ import { useEffect, useState } from 'react';
 interface IngredientSummary {
   id: string;
   name: string;
-  production_type: string;
-  ingredient_type?: string;
-  type?: string;
+  type?: string | null;
+  allergen: boolean;
   hasRecipe: boolean;
 }
 
@@ -66,7 +65,7 @@ export function RecipesPage() {
                     </Link>
                   </td>
                   <td className="px-6 py-3 text-gray-500">
-                    {ing.ingredient_type || '—'}
+                    {ing.type || '—'}
                   </td>
                 </tr>
               ))}
@@ -86,8 +85,8 @@ export function RecipesPage() {
               <span className="block font-semibold text-gray-900 group-hover:text-indigo-600">
                 {ing.name}
               </span>
-              {ing.ingredient_type && (
-                <span className="mt-1 block text-xs text-gray-400">{ing.ingredient_type}</span>
+              {ing.type && (
+                <span className="mt-1 block text-xs text-gray-400">{ing.type}</span>
               )}
             </Link>
           ))}

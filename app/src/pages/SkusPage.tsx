@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react';
 import { Spinner } from '../components/Spinner';
 
 interface Sku {
-  url: string;
-  asin: string;
-  name: string | null;
-  brand: string | null;
+  id: string;
+  name: string;
+  url?: string;
+  asin?: string;
+  brand?: string;
+  quantity?: number;
+  unit?: string;
   latestPrice: number | null;
   latestDate: string | null;
-  hasSkuFile: boolean;
+  component?: { id: string; name: string } | null;
 }
 
 export function SkusPage() {
@@ -32,18 +35,18 @@ export function SkusPage() {
     load();
   }, []);
 
-  async function handleRemove(asin: string) {
-    setRemoving((prev) => new Set(prev).add(asin));
+  async function handleRemove(id: string) {
+    setRemoving((prev) => new Set(prev).add(id));
     try {
-      const r = await fetch(`/api/skus/${asin}`, { method: 'DELETE' });
+      const r = await fetch(`/api/skus/${id}`, { method: 'DELETE' });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      setSkus((prev) => prev?.filter((s) => s.asin !== asin) ?? null);
+      setSkus((prev) => prev?.filter((s) => s.id !== id) ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setRemoving((prev) => {
         const next = new Set(prev);
-        next.delete(asin);
+        next.delete(id);
         return next;
       });
     }
@@ -54,11 +57,25 @@ export function SkusPage() {
     setAddError(null);
     if (!addUrl.trim()) return;
 
+    // Extract a readable name from the Amazon URL
+    const urlName = (() => {
+      try {
+        const pathname = new URL(addUrl.trim()).pathname;
+        const slug = pathname.split('/dp/')[0].replace(/^\/+/, '');
+        return slug ? slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : addUrl.trim();
+      } catch {
+        return addUrl.trim();
+      }
+    })();
+
+    // Extract ASIN
+    const asinMatch = addUrl.match(/\/dp\/([A-Z0-9]+)/);
+
     try {
       const r = await fetch('/api/skus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: addUrl.trim() }),
+        body: JSON.stringify({ name: urlName, url: addUrl.trim(), asin: asinMatch?.[1] ?? null }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -77,7 +94,7 @@ export function SkusPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Amazon SKUs</h1>
         <p className="mt-1 text-gray-500">
-          {skus.length} tracked product{skus.length !== 1 ? 's' : ''} in AMAZON_SKUS.csv
+          {skus.length} tracked product{skus.length !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -105,7 +122,7 @@ export function SkusPage() {
       <div className="space-y-3">
         {skus.map((sku) => (
           <div
-            key={sku.asin}
+            key={sku.id}
             className="flex items-center gap-4 overflow-hidden rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm"
           >
             <div className="min-w-0 flex-1">
@@ -118,7 +135,7 @@ export function SkusPage() {
                 )}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                <span className="font-mono text-xs">{sku.asin}</span>
+                {sku.asin && <span className="font-mono text-xs">{sku.asin}</span>}
                 {sku.latestPrice !== null && (
                   <span className="font-medium text-gray-900">
                     ${sku.latestPrice.toFixed(2)}
@@ -127,30 +144,27 @@ export function SkusPage() {
                 {sku.latestDate && (
                   <span className="text-xs text-gray-400">as of {sku.latestDate}</span>
                 )}
-                {!sku.hasSkuFile && (
-                  <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
-                    No price data
-                  </span>
-                )}
               </div>
             </div>
 
-            <a
-              href={sku.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
-            >
-              Amazon
-            </a>
+            {sku.url && (
+              <a
+                href={sku.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600"
+              >
+                Amazon
+              </a>
+            )}
 
             <button
               type="button"
-              onClick={() => handleRemove(sku.asin)}
-              disabled={removing.has(sku.asin)}
+              onClick={() => handleRemove(sku.id)}
+              disabled={removing.has(sku.id)}
               className="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
             >
-              {removing.has(sku.asin) ? 'Removing...' : 'Remove'}
+              {removing.has(sku.id) ? 'Removing...' : 'Remove'}
             </button>
           </div>
         ))}

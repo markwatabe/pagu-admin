@@ -5,9 +5,8 @@ import { useEffect, useState } from 'react';
 interface RecipeSummary {
   id: string;
   name: string;
-  production_type: string;
-  ingredient_type?: string;
-  type?: string;
+  type?: string | null;
+  allergen: boolean;
   hasRecipe: boolean;
 }
 
